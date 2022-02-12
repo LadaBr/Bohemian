@@ -1,0 +1,13 @@
+## Interface: 20502
+## Title: |cFF4068E0|| - |rLog
+## Author: Elerae-Golemagg
+## Version: 1.0.0
+## SavedVariables: BohemianDKPLog
+## SavedVariablesPerCharacter: Bohemian_LogConfig
+## Dependencies: Bohemian_Core, Bohemian_DKP
+## LoadOnDemand: 0
+
+
+log.lua
+events.lua
+ui.lua

@@ -1,0 +1,23 @@
+## Interface: 20502
+## Title: |cFF4068E0Bohemian|r
+## Author: Elerae-Golemagg
+## Version: 1.0.0
+## SavedVariablesPerCharacter: Bohemian_CoreConfig
+
+libs\libs.xml
+const.lua
+defaults.lua
+table.lua
+string.lua
+utils.lua
+cps.lua
+comms.lua
+core.lua
+player.lua
+guild.lua
+events.lua
+version.lua
+init.lua
+ui.lua
+hooks.lua
+sync.lua
