@@ -1,0 +1,11 @@
+## Interface: 20502
+## Title: |cFF4068E0|| - |rElvUI
+## Author: Elerae-Golemagg
+## Version: 1.0.0
+
+## Dependencies: Bohemian
+## LoadOnDemand: 0
+
+elvui.lua
+hooks.lua
+events.lua

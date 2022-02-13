@@ -1,12 +1,11 @@
 package-as: Bohemian
 
 move-folders:
-    Bohemian/Bohemian_Auction: Bohemian_Auction
-    Bohemian/Bohemian_Core: Bohemian_Core
-    Bohemian/Bohemian_Characters: Bohemian_Characters
-    Bohemian/Bohemian_DKP: Bohemian_DKP
-    Bohemian/Bohemian_ElvUI: Bohemian_ElvUI
-    Bohemian/Bohemian_Log: Bohemian_Log
-    Bohemian/Bohemian_Professions: Bohemian_Professions
-    Bohemian/Bohemian_Raid: Bohemian_Raid
-    Bohemian/Bohemian_Talents: Bohemian_Talents
+    Bohemian/plugins/Bohemian_Auction: Bohemian_Auction
+    Bohemian/plugins/Bohemian_Characters: Bohemian_Characters
+    Bohemian/plugins/Bohemian_DKP: Bohemian_DKP
+    Bohemian/plugins/Bohemian_ElvUI: Bohemian_ElvUI
+    Bohemian/plugins/Bohemian_Log: Bohemian_Log
+    Bohemian/plugins/Bohemian_Professions: Bohemian_Professions
+    Bohemian/plugins/Bohemian_Raid: Bohemian_Raid
+    Bohemian/plugins/Bohemian_Talents: Bohemian_Talents
