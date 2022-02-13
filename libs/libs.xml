@@ -3,6 +3,4 @@
 	<Script file="LibDeflate\LibStub\LibStub.lua" />
 	<Script file="LibDeflate\LibDeflate.lua" />
 	<Script file="LibSerialize\LibSerialize.lua" />
-	<Script file="md5\md5.lua" />
-	<Script file="checksum\checksum.lua" />
 </Ui>

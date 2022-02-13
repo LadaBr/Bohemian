@@ -119,7 +119,6 @@ end
 function A:GUILD_MEMBER_COUNT_CHANGED(_, online)
     for player, _ in pairs(online) do
         E:RequestProfessionInfoFrom(player)
-        E:ShareAllCraftHistory(player.name)
     end
 end
 

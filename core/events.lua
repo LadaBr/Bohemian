@@ -84,6 +84,7 @@ function A:GUILD_ROSTER_UPDATE(...)
     local members, onlineMembers, _ = GetNumGuildMembers();
     if members > 0 and E.firstLoad then
         E:CacheGuildRoster()
+        E:GuildStatus_UpdateHook()
     end
     BohemianConfig.showOffline = GetGuildRosterShowOffline();
     E.lastOnlineMembers = onlineMembers
@@ -197,6 +198,7 @@ end
 function A:GUILD_FRAME_UPDATE()
     E:UpdateColumnAfterUpdate()
     E:RenderLFGButtons()
+    E:UpdateGMOTDState()
 end
 
 

@@ -490,3 +490,68 @@ function E:ConfigTextToTable(txt)
     return t
 end
 
+function E:AdjustGuildInfo()
+    local e = CreateFrame("EditBox", "$parentFakeMOTD", GuildFrameNotesText:GetParent())
+    e:SetFontObject("GameFontDisableSmall")
+    e:SetPoint("TOPLEFT", GuildFrameNotesText, 0, 0)
+    e:SetPoint("BOTTOMRIGHT", GuildFrameNotesText, 0, 0)
+    e:SetSize(GuildFrameNotesText:GetSize())
+    e:SetMultiLine(true)
+    e:SetAutoFocus(false)
+    e:SetJustifyH("LEFT")
+    e:SetScript( "OnEscapePressed", function( )
+        e:ClearFocus()
+        e:SetText(GuildFrameNotesText:GetText())
+    end )
+    e:SetScript("OnEnterPressed", function(self)
+        self:ClearFocus()
+        e:SetText(GuildFrameNotesText:GetText())
+    end)
+    e:SetScript("OnChar", function(self)
+        self:ClearFocus()
+        e:SetText(GuildFrameNotesText:GetText())
+    end)
+
+
+    GuildInfoTextBackground:HookScript("OnShow", function()
+        if CanEditGuildInfo() then
+            return
+        end
+        GuildInfoEditBox:EnableMouse(1)
+        GuildInfoEditBox:Enable()
+    end)
+    GuildInfoEditBox:HookScript( "OnEscapePressed", function(self)
+        if CanEditGuildInfo() then
+            return
+        end
+        self:ClearFocus()
+        self:SetText(GetGuildInfoText())
+    end )
+    GuildInfoEditBox:HookScript("OnEnterPressed", function(self)
+        if CanEditGuildInfo() then
+            return
+        end
+        self:ClearFocus()
+        self:SetText(GetGuildInfoText())
+    end)
+    GuildInfoEditBox:SetScript("OnChar", function(self)
+        if CanEditGuildInfo() then
+            return
+        end
+        self:ClearFocus()
+        self:SetText(GetGuildInfoText())
+    end)
+end
+
+function E:UpdateGMOTDState()
+    if CanEditMOTD() then
+        GuildFrameFakeMOTD:Hide()
+        GuildFrameNotesText:Show()
+        GuildMOTDEditButton:Show()
+    else
+        GuildFrameFakeMOTD:SetText(GetGuildRosterMOTD() or "")
+        GuildFrameFakeMOTD:Show()
+        GuildFrameNotesText:Hide()
+        GuildMOTDEditButton:Hide()
+    end
+end

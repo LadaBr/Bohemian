@@ -91,7 +91,7 @@ function E:SendPayloadTo(target, type, data)
     self:SendEventTo(target, self.EVENT.PAYLOAD_START, type, #data, id)
 end
 
-function E:SendPayload(channel, data)
+function E:SendPayload(channel, type, data)
     local id, data = self:PreparePayloadForSend(data)
     self:SendEvent(channel, self.EVENT.PAYLOAD_START, type, #data, id)
 end
