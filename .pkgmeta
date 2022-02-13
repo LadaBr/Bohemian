@@ -1,0 +1,12 @@
+package-as: Bohemian
+
+move-folders:
+    Bohemian/Bohemian_Auction: Bohemian_Auction
+    Bohemian/Bohemian_Core: Bohemian_Core
+    Bohemian/Bohemian_Characters: Bohemian_Characters
+    Bohemian/Bohemian_DKP: Bohemian_DKP
+    Bohemian/Bohemian_ElvUI: Bohemian_ElvUI
+    Bohemian/Bohemian_Log: Bohemian_Log
+    Bohemian/Bohemian_Professions: Bohemian_Professions
+    Bohemian/Bohemian_Raid: Bohemian_Raid
+    Bohemian/Bohemian_Talents: Bohemian_Talents
