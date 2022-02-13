@@ -123,7 +123,7 @@ end
 
 function A:VERSION_INFO(version, sender)
     E.versions[sender] = version
-    E:Print(sender, "has version", version)
+    E:Debug(sender, "has version", version)
     E:VersionCheck()
 end
 
