@@ -168,7 +168,6 @@ function E:LoadDataWhenReady()
             E:LoadDataWhenReady()
         end)
     else
-        E:ShareVersionInfo()
         E:CacheGuildRoster()
         E.firstLoad = true
         E.EventFrame:SetScript('OnEvent', function(_, ...)

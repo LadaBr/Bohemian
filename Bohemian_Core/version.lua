@@ -6,17 +6,27 @@ E.versions = {}
 function E:GetAddonVersion()
     return GetAddOnMetadata(self.NAME, "Version")
 end
+
 function E:ShareVersionInfo()
     local version = self:GetAddonVersion()
     self:SendEvent("GUILD", self.EVENT.VERSION_INFO, version)
 end
 
-function E:OnVersionInfoRequest(sender)
-    if sender == self:GetPlayerName(true) then
-        return
-    end
-    self:ShareVersionInfo()
+function E:ShareVersionInfoTo(playerName)
+    local version = self:GetAddonVersion()
+    self:SendEventTo(playerName, self.EVENT.VERSION_INFO, version)
 end
+
+function E:RequestVersionInfo()
+    self:SendEvent("GUILD", self.EVENT.VERSION_INFO_REQUEST)
+end
+
+function E:RequestVersionInfoFrom(name)
+    self:SendEventTo(name, self.EVENT.VERSION_INFO_REQUEST)
+end
+
+
+
 function E:GetAddonVersionNum(versionStr)
     local major, minor, patch = string.match(versionStr, "(%d+)%.(%d+)%.(%d+)")
     return tonumber(string.format("%02d", major)..string.format("%02d", minor)..string.format("%02d", patch))

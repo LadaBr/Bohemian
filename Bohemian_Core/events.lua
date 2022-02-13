@@ -54,14 +54,14 @@ function A:READY()
 end
 
 function A:ONLINE_CHECK(sender)
-    if sender == self:GetPlayerName(true) then
+    if sender == E:GetPlayerName(true) then
         return
     end
     E:SendEventTo(sender, E.EVENT.ONLINE_CHECK_RESPONSE, E.onlineSince, Bohemian_CoreConfig.lastTimeOnline or 0)
 end
 
 function A:ONLINE_CHECK_RESPONSE(time, lastTimeOnline, sender)
-    if sender == self:GetPlayerName(true) then
+    if sender == E:GetPlayerName(true) then
         return
     end
     E.onlineChecks[sender] = { name = sender, onlineSince = tonumber(time), lastTimeOnline = tonumber(lastTimeOnline) or 0 }
@@ -92,6 +92,7 @@ end
 function A:GUILD_MEMBER_COUNT_CHANGED(offline, online)
     for player, _ in pairs(online) do
         E:SendEventTo(player.name, E.EVENT.ONLINE_CHECK)
+        E:RequestVersionInfoFrom(player.name)
     end
     for player, _ in pairs(offline) do
         E.onlineChecks[player] = nil
@@ -114,16 +115,16 @@ function A:PLAYER_LOGOUT()
 end
 
 function A:WHISPER(event, target, ...)
-    if target ~= self:GetPlayerName(true) then
+    if target ~= E:GetPlayerName(true) then
         return
     end
     E:OnEvent(event, ...)
 end
 
 function A:VERSION_INFO(version, sender)
-    self.versions[sender] = version
-    E:Debug(sender, "has version", version)
-    self:VersionCheck()
+    E.versions[sender] = version
+    E:Print(sender, "has version", version)
+    E:VersionCheck()
 end
 
 function A:STREAM_DATA(message, channel, sender)
@@ -205,4 +206,17 @@ function A:GUILD_FRAME_AFTER_UPDATE()
     E:RenderGuildFrame()
     E:FixToggleButton()
     E:UpdateDetailFrame()
+end
+
+function A:VERSION_INFO_REQUEST(sender)
+    if sender == E:GetPlayerName(true) then
+        return
+    end
+    E:ShareVersionInfoTo(sender)
+end
+
+
+function A:SYNC_DONE()
+    E:RequestVersionInfo()
+    E:ShareVersionInfo()
 end
