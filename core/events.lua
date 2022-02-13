@@ -98,7 +98,6 @@ function A:GUILD_MEMBER_COUNT_CHANGED(offline, online)
     for player, _ in pairs(offline) do
         E.onlineChecks[player] = nil
     end
-    E:GuildStatus_UpdateHook()
 end
 
 function A:PLAYER_ENTERING_WORLD(isLogin, isReload)

@@ -326,7 +326,8 @@ function E:CreateGuildCraftFrame()
         if not value or value == "" then
             self:SetText(searchText)
             self.blockSearch = true
-            E:RenderCrafts(GuildCraftFrame.playerName, GuildCraftFrame.profession, Crafts[GuildCraftFrame.playerName][GuildCraftFrame.profession.name])
+            local guildCrafts = E:GetGuildCrafts()
+            E:RenderCrafts(GuildCraftFrame.playerName, GuildCraftFrame.profession, guildCrafts[GuildCraftFrame.playerName][GuildCraftFrame.profession.name])
         else
             self:SetText(value)
             self.blockSearch = false
@@ -334,6 +335,9 @@ function E:CreateGuildCraftFrame()
         end
     end
     e:SetScript("OnEditFocusLost", function(self)
+        if self.blockSearch then
+            return
+        end
         self:SetSearchValue(self:GetText())
     end)
 
@@ -477,8 +481,8 @@ function E:SelectCraftButton(button)
             GuildCraftFrameScrollDetailFrame:Show()
             GuildCraftFrameScrollDetailFrameChildFrameSkillIconTexture:SetTexture(button.craft.data.icon)
             GuildCraftFrameScrollDetailFrameChildFrameSkillIcon.itemLink = button.craft.data.link
-            local maxMade = button.craft.data.max
-            local minMade = button.craft.data.min
+            local maxMade = button.craft.data.max or 0
+            local minMade = button.craft.data.min or 0
             local iconText = GuildCraftFrameScrollDetailFrameChildFrameSkillIconCount
             if ( maxMade > 1 ) then
                 if ( minMade == maxMade ) then

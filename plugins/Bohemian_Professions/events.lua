@@ -30,7 +30,7 @@ function A:CRAFT(profName, craftName, craftType, numAvailable, icon, desc, coold
     local guildName = C:GetGuildName()
     desc = C:decodeBase64(desc)
     local reagents_t = {}
-    if not reagents or not sender then
+    if not reagents or not sender or not C.guildRoster[sender] then
         return
     end
     reagents = {strsplit("*", reagents)}

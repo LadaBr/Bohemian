@@ -221,7 +221,6 @@ function E:ShareTradeSkillsDelayed()
     self:ShareTradeSkills()
 end
 function E:ShareCraftHistory()
-    print("Sharing craft history")
     local crafts = self:GetPlayerCraftHistory()
     if crafts then
         local payload = {}
@@ -255,45 +254,51 @@ function E:ShareAllCraftHistory(sendTo)
         end
         local payload = {}
         local payloads = {}
-        C:AddToUpdateQueue(function(id)
-            for j = 1, 2 do
-                if i > #allCrafts then
-                    C:RemoveFromUpdateQueue(id)
-                    --table.insert(payloads, { C:PreparePayloadForSend(payload) })
-                    --for _, payload in ipairs(payloads) do
-                    --    local id, chunks = unpack(payload)
-                    --    print("Sending", id, #chunks)
-                    --    if sendTo then
-                    --        C:SendEventTo(sendTo, C.EVENT.PAYLOAD_START, "CRAFTS", #chunks, id)
-                    --    else
-                    --        C:SendEvent("GUILD", C.EVENT.BROADCAST_START, "CRAFTS", #chunks, id)
-                    --        C_Timer.After(1, function()
-                    --            C:StartBroadcastPayload(id)
-                    --        end)
-                    --    end
-                    --end
-
-                    return
+        local interval = 0.1
+        local currentInterval = 0
+        local t = time()
+        C:AddToUpdateQueue(function(id, elapsed)
+            --currentInterval = currentInterval + elapsed
+            --if currentInterval < interval then
+            --    return
+            --end
+            --currentInterval = 0
+            if i > #allCrafts then
+                C:RemoveFromUpdateQueue(id)
+                table.insert(payloads, { C:PreparePayloadForSend(payload) })
+                for _, payload in ipairs(payloads) do
+                    local id, chunks = unpack(payload)
+                    --print("Sending", id, #chunks, time() - t)
+                    if sendTo then
+                        C:SendEventTo(sendTo, C.EVENT.PAYLOAD_START, "CRAFTS", #chunks, id)
+                    else
+                        C:SendEvent("GUILD", C.EVENT.BROADCAST_START, "CRAFTS", #chunks, id)
+                        C_Timer.After(1, function()
+                            C:StartBroadcastPayload(id)
+                        end)
+                    end
                 end
-                --if i % 100 == 0 then
-                --    table.insert(payloads, { C:PreparePayloadForSend(payload) })
-                --    payload = {}
-                --end
-                local item = allCrafts[i]
-                local playerName = item[1]
-                local profName = item[2]
-                local craftName = item[3]
-                local data = item[4]
-
-                local reagents = {}
-                for _, reagent in pairs(data.reagents) do
-                    table.insert(reagents, table.concat({reagent.texture, reagent.count, reagent.playerCount, reagent.link}, "~"))
-                end
-                reagents = table.concat(reagents, "*")
-                 C:SendEventTo(sendTo, E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
-                -- table.insert(payload, data)
-                i = i + 1
+                return
             end
+            if i % 5 == 0 then
+                table.insert(payloads, { C:PreparePayloadForSend(payload) })
+                payload = {}
+            end
+            local item = allCrafts[i]
+            local playerName = item[1]
+            local profName = item[2]
+            local craftName = item[3]
+            local data = item[4]
+
+            local reagents = {}
+            for _, reagent in pairs(data.reagents) do
+                table.insert(reagents, table.concat({reagent.texture, reagent.count, reagent.playerCount, reagent.link}, "~"))
+            end
+            reagents = table.concat(reagents, "*")
+            local data = C:PreparePayload(E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, data.desc, data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
+            -- C:SendEventTo(sendTo, E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
+             table.insert(payload, data)
+            i = i + 1
         end)
     end
 end
@@ -328,7 +333,7 @@ function E:PrepareAllCraftHistoryForSend(cb)
                 table.insert(reagents, table.concat({reagent.texture, reagent.count, reagent.playerCount, reagent.link}, "~"))
             end
             reagents = table.concat(reagents, "*")
-            local data = C:PreparePayload(self.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
+            local data = C:PreparePayload(self.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, data.desc, data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
             table.insert(payload, data)
             i = i + 1
         end)
