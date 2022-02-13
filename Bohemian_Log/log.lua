@@ -67,7 +67,6 @@ end
 --                    CurrentDKPLog.current.checksum = E:CreateChecksum()
 --                    E.checksumDelay = E.defaultChecksumDelay
 --                    C:OnEvent("GUILD_FRAME_UPDATE")
---                    print("CHECKSUM DONE")
 --                end)
 --                coroutine.resume(co)
 --
