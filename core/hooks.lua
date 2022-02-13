@@ -9,6 +9,7 @@ GUILD_FRAME_PADDING_RIGHT = 10
 
 function E:GuildStatus_UpdateHook()
     if E.firstLoad then
+        E:OnEvent("GUILD_FRAME_BEFORE_UPDATE")
         E:OnEvent("GUILD_FRAME_UPDATE")
         E:OnEvent("GUILD_FRAME_AFTER_UPDATE")
     end

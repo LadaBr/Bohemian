@@ -33,6 +33,7 @@ E.checkCheatersIn = 5
 E.defaultChecksumDelay = 1
 E.checksumDelay = E.defaultChecksumDelay
 E.isInitialSyncActive = true
+E.EVENT_QUEUE = {}
 CurrentDKPLog = {}
 
 local LibDeflate = LibStub:GetLibrary("LibDeflate")
@@ -50,32 +51,14 @@ function E:StartAntiCheat()
     end)
 end
 
-
-
---function E:StartLogQueue()
---    C_Timer.After(10, function()
---        E:FinishLogSync()
---    end)
---    E.LogQueueFrame:SetScript("OnUpdate", function(_, elapsed)
---
---        if not E.checksumBlocked then
---            E.checksumDelay = E.checksumDelay - elapsed
---            if E.checksumDelay <= 0 then
---                E.checksumBlocked = true
---                local co = coroutine.create(function ()
---                    CurrentDKPLog.current.checksum = E:CreateChecksum()
---                    E.checksumDelay = E.defaultChecksumDelay
---                    C:OnEvent("GUILD_FRAME_UPDATE")
---                end)
---                coroutine.resume(co)
---
---            end
---        end
---
---    end)
---end
---E:StartLogQueue()
-
+function E:ProcessQueue()
+    local i = #E.EVENT_QUEUE
+    while #E.EVENT_QUEUE > 0 do
+        C:OnEvent(unpack(table.remove(E.EVENT_QUEUE, i)))
+        i = i - 1
+    end
+    E:Debug("Queue processed")
+end
 
 function E:ProcessLog(id, time, timeSort, fullName, prev, new, reason, editor, external, reverted)
     if not CurrentDKPLog.current.data[fullName] then
@@ -411,6 +394,7 @@ end
 function E:FinishLogSync()
     E.initialized = true
     E:DetectChangesAll()
+    E:ProcessQueue()
 end
 
 function E:StartLogSyncSequence()

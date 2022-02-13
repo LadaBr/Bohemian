@@ -382,9 +382,13 @@ function E:ReplaceGuildFrameGuildStatusNoteWithDKP(index)
 end
 
 function E:UpdateColumnAfterUpdate()
-    local width = GuildListScrollFrame:IsVisible() and GUILD_FRAME_GUILD_STATUS_COLUMN_WIDTH_NOTE - 25 or GUILD_FRAME_GUILD_STATUS_COLUMN_WIDTH_NOTE
-    WhoFrameColumn_SetWidth(GuildFrameGuildStatusColumnHeader5, width)
+
+    WhoFrameColumn_SetWidth(GuildFrameGuildStatusColumnHeader5, E:GetNoteColumnWidth())
     WhoFrameColumn_SetWidth(GuildFrameGuildStatusColumnHeader3, GUILD_FRAME_COLUMN_WIDTH_DKP)
+end
+
+function E:GetNoteColumnWidth()
+    return GuildListScrollFrame:IsVisible() and GUILD_FRAME_GUILD_STATUS_COLUMN_WIDTH_NOTE - 25 or GUILD_FRAME_GUILD_STATUS_COLUMN_WIDTH_NOTE
 end
 
 function E:RefreshDKPColumn(index, note, online)

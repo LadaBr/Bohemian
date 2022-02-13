@@ -27,6 +27,21 @@ function A:MODULE_LOADED(module)
     end
 end
 
+function A:GUILD_FRAME_UPDATE()
+    if E.isElvUI then
+        local showScrollBar = GuildListScrollFrame:IsVisible()
+        if ( showScrollBar ) then
+            WhoFrameColumn_SetWidth(GuildFrameColumnHeader2, 112);
+        else
+            WhoFrameColumn_SetWidth(GuildFrameColumnHeader2, 137);
+        end
+        local module = C:GetModule("Bohemian_DKP")
+        if module then
+            WhoFrameColumn_SetWidth(GuildFrameGuildStatusColumnHeader5, module:GetNoteColumnWidth() - 1.5);
+        end
+
+    end
+end
 function A:GUILD_FRAME_AFTER_UPDATE()
     if E.isElvUI then
         for i=1, GUILDMEMBERS_TO_DISPLAY do
@@ -35,10 +50,8 @@ function A:GUILD_FRAME_AFTER_UPDATE()
     end
 end
 
-function A:GUILD_FRAME_UPDATE()
+function A:GUILD_FRAME_BEFORE_UPDATE()
     if E.isElvUI then
-        if GuildFrameGuildStatusColumnHeader5 then
-            GuildFrameGuildStatusColumnHeader5:SetWidth(GuildFrameGuildStatusColumnHeader5:GetWidth() - 18.5)
-        end
+
     end
 end

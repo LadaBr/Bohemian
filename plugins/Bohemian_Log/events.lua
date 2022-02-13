@@ -181,10 +181,18 @@ function A:GUILD_MEMBER_COUNT_CHANGED(_, online)
 end
 
 function A:LAST_LOG_UPDATE_REQUEST(sender)
+    if not E.initialized then
+        E.EVENT_QUEUE[#E.EVENT_QUEUE + 1] = {"LAST_LOG_UPDATE_REQUEST", sender}
+        return
+    end
     C:SendEventTo(sender, "LAST_LOG_UPDATE", CurrentDKPLog.current.newest)
 end
 
 function A:LAST_LOG_UPDATE_REQUEST_SINGLE(sender)
+    if not E.initialized then
+        E.EVENT_QUEUE[#E.EVENT_QUEUE + 1] = {"LAST_LOG_UPDATE_REQUEST", sender}
+        return
+    end
     C:SendEventTo(sender, "LAST_LOG_UPDATE_SINGLE", CurrentDKPLog.current.newest)
 end
 

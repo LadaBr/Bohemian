@@ -79,7 +79,6 @@ function E:AdjustGuildFrameControlButtons()
 end
 
 function E:RenderGuildFrame()
-    WhoFrameColumn_SetWidth(GuildFrameColumnHeader2, GuildListScrollFrame:IsVisible()  and 95 or 120);
     local width = E:GetChildrenHeaderWidth(FriendsFrame.playerStatusFrame and GuildPlayerStatusFrame or GuildStatusFrame) + GUILD_FRAME_PADDING_RIGHT
     width = width + E.GUILD_FRAME_ADDITIONAL_WIDTH
     local tabIndex = PanelTemplates_GetSelectedTab(FriendsFrame)
@@ -88,7 +87,7 @@ function E:RenderGuildFrame()
             if GuildListScrollFrame:IsVisible() then
                 width = width + GUILD_FRAME_SCROLL_WIDTH
             end
-            width = math.max(E.FRIENDS_FRAME_DEFAULT_WIDTH, width)
+            width = math.floor(math.max(E.FRIENDS_FRAME_DEFAULT_WIDTH, width))
             FriendsFrame:SetWidth(width)
             GuildListScrollFrame:SetWidth(width - 30)
             GuildFrameNotesText:SetWidth(FriendsFrame:GetWidth() - 20)
@@ -168,7 +167,6 @@ function E:SetGuildStatusColumnWidth()
             button:SetWidth(_G[header]:GetWidth() - 8 - COLUMN_PADDING)
         end
     end
-
 end
 
 function E:CreateGuildColumnsForHeader(header, buttonName, isStringOnly, inherits)
@@ -340,8 +338,16 @@ function E:GetLFGFrameLastItem()
     end
     return last
 end
+GUILD_FRAME_COLUMN_WIDTH_ZONE = 10
 
 function E:UpdateColumnAfterUpdate()
+    local showScrollBar = GuildListScrollFrame:IsVisible()
+    if ( showScrollBar ) then
+        WhoFrameColumn_SetWidth(GuildFrameColumnHeader2, 95);
+    else
+        GUILD_FRAME_COLUMN_WIDTH_ZONE = 0
+        WhoFrameColumn_SetWidth(GuildFrameColumnHeader2, 120);
+    end
     local guildOffset = FauxScrollFrame_GetOffset(GuildListScrollFrame);
     local numMembers = E:GetNumVisibleGuildMembers()
     for i = 1, GUILDMEMBERS_TO_DISPLAY, 1 do

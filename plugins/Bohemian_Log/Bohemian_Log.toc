@@ -1,7 +1,7 @@
 ## Interface: 20503
 ## Title: |cFF4068E0|| - |rLog
 ## Author: Elerae-Golemagg
-## Version: 1.0.1
+## Version: 1.0.2
 ## SavedVariables: BohemianDKPLog
 ## SavedVariablesPerCharacter: Bohemian_LogConfig
 ## Dependencies: Bohemian, Bohemian_DKP
