@@ -295,7 +295,7 @@ function E:ShareAllCraftHistory(sendTo)
                 table.insert(reagents, table.concat({reagent.texture, reagent.count, reagent.playerCount, reagent.link}, "~"))
             end
             reagents = table.concat(reagents, "*")
-            local data = C:PreparePayload(E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, data.desc, data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
+            local data = C:PreparePayload(E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
             -- C:SendEventTo(sendTo, E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
              table.insert(payload, data)
             i = i + 1
