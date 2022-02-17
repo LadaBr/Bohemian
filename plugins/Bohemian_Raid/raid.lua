@@ -9,8 +9,6 @@ Bohemian_RaidConfig = {}
 E.raidMembers = {}
 
 Bohemian.RegisterModule(AddonName, E, function()
-    SetCVar("cameraDistanceMaxZoomFactor", 4.0)
-    SetCVar("nameplateMaxDistance", 41)
     Bohemian_RaidConfig.announceParry = Bohemian_RaidConfig.announceParry or true
     Bohemian_RaidConfig.announceMD = Bohemian_RaidConfig.announceMD or true
     E:AddConfigFrames(E.CORE:CreateModuleInterfaceConfig("Raid"))

@@ -117,7 +117,7 @@ end
 function E:PreparePayloadForSend(data)
     local id = E:uuid()
     data = self:EncodePayload(data)
-    local chunks = self:splitStringByChunks(data, 230 - CHUNK_HEAD_SIZE - #id)
+    local chunks = self:splitStringByChunks(data, 200 - CHUNK_HEAD_SIZE - #id)
     local totalSize = #data + (#chunks * (self.cpsOverhead + CHUNK_HEAD_SIZE + #id))
     self:Debug("Sending data with size of", totalSize, "|| chunks:", #chunks)
     self:Debug("Sending will take", totalSize / BohemianConfig.cpsLimit, "seconds")

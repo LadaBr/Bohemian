@@ -221,7 +221,7 @@ function E:UpdateBidButtonState()
         return
     end
     local playerName = C:GetPlayerName(true)
-    local hasEnoughDKP = self.currentItem.price <= self:GetCurrentDKP(playerName)
+    local hasEnoughDKP = self.currentItem.price <= self:GetCurrentDKP(playerName) or 0
     if self.bidInfo.name ~= playerName then
         self:EnableBidding(hasEnoughDKP)
     else

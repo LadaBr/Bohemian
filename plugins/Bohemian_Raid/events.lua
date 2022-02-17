@@ -46,3 +46,8 @@ end
 function A:GROUP_ROSTER_UPDATE()
     E:CacheRaid()
 end
+
+function A:READY()
+    SetCVar("cameraDistanceMaxZoomFactor", 4.0)
+    SetCVar("nameplateMaxDistance", 41)
+end

@@ -22,7 +22,7 @@ updateFrame:SetScript("OnUpdate", function(_, elapsed)
 end)
 function E:Load()
     BohemianConfig.debug = BohemianConfig.debug or false
-    BohemianConfig.cpsLimit = BohemianConfig.cpsLimit or 3000
+    BohemianConfig.cpsLimit = BohemianConfig.cpsLimit or 2000
 
     E.onlineSince = GetServerTime()
     E.FRIENDS_FRAME_DEFAULT_WIDTH = FriendsFrame:GetWidth()

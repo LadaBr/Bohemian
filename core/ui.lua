@@ -465,9 +465,11 @@ function E:CreateInterfaceConfig()
 
     BohemkaDKPInterfaceOptionsPanel.okay = function()
         BohemianConfig.debug = BohemkaDKPInterfaceOptionsPanelDebug:GetChecked()
+        BohemianConfig.cpsLimit = BohemkaDKPInterfaceOptionsPanelEditBoxCpsLimit:GetNumber()
     end
     BohemkaDKPInterfaceOptionsPanel.cancel = function()
         BohemkaDKPInterfaceOptionsPanelDebug:SetChecked(BohemianConfig.debug)
+        BohemkaDKPInterfaceOptionsPanelEditBoxCpsLimit:SetNumber(BohemianConfig.cpsLimit)
     end
 
     InterfaceOptions_AddCategory(f)
