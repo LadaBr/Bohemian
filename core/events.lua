@@ -148,17 +148,17 @@ function A:STREAM_DATA(message, channel, sender)
     E:Debug("Saved chunk", order, id, chunks.type, chunks.received.."/"..chunks.size, sender)
     if chunks.size == chunks.received then
         E.chunks[id] = nil
-        E:Debug("Processing chunks", id, chunks.type)
+        E:Debug("Processing chunks", id, chunks.type, sender)
         if not chunks.data then
             return
         end
         local payload = table.concat(table.removeNil(chunks.data))
         local data = E:ProcessPayload(payload)
-        E:Debug("Processed chunks", id, chunks.type)
+        E:Debug("Processed chunks", id, chunks.type, sender)
         if not data then return end
 
         data = E:split(data, "\n")
-        E:Debug("Executing chunks", id, chunks.type)
+        E:Debug("Executing chunks", id, chunks.type, sender)
         for _, itemStr in ipairs(data) do
             local event, args = E:ProcessEvent(itemStr, channel, sender)
             E:OnEvent(event, unpack(args))

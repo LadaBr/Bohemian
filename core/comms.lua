@@ -9,6 +9,7 @@ local LibDeflate = LibStub:GetLibrary("LibDeflate")
 local LibSerialize = LibStub("LibSerialize")
 E.chunks = {}
 E.chunksToSend = {}
+E.queueStats = {}
 
 function E:SendEvent(channel, event, ...)
     self:Debug(event, "Processing payload for event", ...)
@@ -20,9 +21,36 @@ function E:SendEvent(channel, event, ...)
     self:SendAddonMessage(payload, channel)
 end
 
+function E:SendPriorityEvent(channel, event, ...)
+    self:Debug(event, "Processing payload for event", ...)
+    local payload = self:PreparePayload(event, ...)
+    if not payload then
+        return
+    end
+    self:Debug(event, "Sending event", channel, payload)
+    self:SendAddonPriorityMessage(payload, channel)
+end
+
+function E:TrackStats(payload, event, target)
+    local cps = #payload + self.cpsOverhead
+    if cps > self:GetCPSLimit() then
+        if not E.queueStats[event] then
+            E.queueStats[event] = {}
+        end
+        if not E.queueStats[event][target] then
+            E.queueStats[event][target] = 0
+        end
+        E.queueStats[event][target] = E.queueStats[event][target] + 1
+    end
+end
+
+
 function E:SendEventTo(target, event, ...)
     self:Debug(event, "Processing payload for event", ...)
     local payload = self:PreparePayload(self.EVENT.WHISPER, event, target, ...)
+    if not payload then
+        return
+    end
     -- TODO FIND SOME WAY TO CHECK IF PLAYER IS ONLINE, CLIENT CACHING IS TOO SLOW
     --if not payload or (self.guildRoster[target] and not self.guildRoster[target][9] and E.stopIgnoringOffline) then
     --    self:Print("Event skipped. Player is offline or payload is empty.", online)
@@ -32,6 +60,13 @@ function E:SendEventTo(target, event, ...)
     self:SendAddonMessage(payload, "GUILD")
 end
 
+function E:SendPriorityEventTo(target, event, ...)
+    self:Debug(event, "Processing payload for event", ...)
+    local payload = self:PreparePayload(self.EVENT.WHISPER, event, target, ...)
+    self:Debug(event, "Sending event to", target, payload)
+    self:SendAddonPriorityMessage(payload, "GUILD")
+end
+
 function E:SendAddonMessage(payload, ...)
     local cps = #payload + self.cpsOverhead
     if cps > self:GetCPSLimit() then
@@ -39,6 +74,10 @@ function E:SendAddonMessage(payload, ...)
         return
     end
     self.cps = self.cps + cps
+    C_ChatInfo.SendAddonMessage(self.NAME, payload, ...)
+end
+
+function E:SendAddonPriorityMessage(payload, ...)
     C_ChatInfo.SendAddonMessage(self.NAME, payload, ...)
 end
 
@@ -78,7 +117,7 @@ end
 function E:PreparePayloadForSend(data)
     local id = E:uuid()
     data = self:EncodePayload(data)
-    local chunks = self:splitStringByChunks(data, 267 - CHUNK_HEAD_SIZE - #id)
+    local chunks = self:splitStringByChunks(data, 230 - CHUNK_HEAD_SIZE - #id)
     local totalSize = #data + (#chunks * (self.cpsOverhead + CHUNK_HEAD_SIZE + #id))
     self:Debug("Sending data with size of", totalSize, "|| chunks:", #chunks)
     self:Debug("Sending will take", totalSize / BohemianConfig.cpsLimit, "seconds")

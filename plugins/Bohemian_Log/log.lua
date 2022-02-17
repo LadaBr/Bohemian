@@ -98,7 +98,8 @@ end
 
 function E:ProcessCheater(fullName, prev, cur)
     self.cheaters[fullName] = true
-    E:Print(format("%s %s is a cheater! DKP edited outside of the addon! Change: %d -> %d", C:colorize("WARNING!", C.COLOR.RED), C:AddClassColorToName(fullName), prev, cur))
+    -- TODO FIX CHECK TIME
+    -- E:Print(format("%s %s is a cheater! DKP edited outside of the addon! Change: %d -> %d", C:colorize("WARNING!", C.COLOR.RED), C:AddClassColorToName(fullName), prev, cur))
 end
 
 function E:DetectChanges(fullName, currentDKP)
@@ -155,19 +156,19 @@ function E:FindInconsistencies(log, fullName, cb)
     return newLog
 end
 function E:ShareLog(id, time, timeSort, fullName, prev, new, reason, editor, external, reverted)
-    C:SendEvent("GUILD", self.EVENT.LOG, id, time, timeSort, fullName, prev, new, reason, editor, external or 0, reverted or 0)
+    C:SendPriorityEvent("GUILD", self.EVENT.LOG, id, time, timeSort, fullName, prev, new, reason, editor, external or 0, reverted or 0)
 end
 function E:AddReason(frame, reason, reverted)
     local prevItem = self.sortedLog[frame.index + 1]
-    self:ShareLog(C:uuid(), prevItem.time + 1, prevItem.time + 1, frame.fullName, frame.item.prev, frame.item.current, reason, C:GetPlayerName(true), 1, reverted)
+    self:ShareLog(C:uuid(), GetServerTime(), prevItem.time + 1, frame.fullName, frame.item.prev, frame.item.current, reason, C:GetPlayerName(true), 1, reverted)
 end
 
 function E:SyncLog()
-    C:SendEvent("GUILD", self.EVENT.SYNC_LOG, Bohemian_LogConfig.lastTimeOnline and Bohemian_LogConfig.lastTimeOnline - 360 or 0)
+    C:SendPriorityEvent("GUILD", self.EVENT.SYNC_LOG, Bohemian_LogConfig.lastTimeOnline and Bohemian_LogConfig.lastTimeOnline - 360 or 0)
 end
 function E:SyncLogFrom(name, since)
     E:Debug("Syncing log from", name, date('%Y/%m/%d %H:%M', since))
-    C:SendEventTo(name, self.EVENT.SYNC_LOG, since or 0)
+    C:SendPriorityEventTo(name, self.EVENT.SYNC_LOG, since or 0)
 end
 
 function E:LogToChunks(since, cb)
@@ -239,6 +240,7 @@ function E:InitDKPLog()
         }
     end
     CurrentDKPLog = BohemianDKPLog[guildName]
+    E.logLoaded = true
     E:UpdateLastBackupInfo()
 end
 function E:RequestWipeData(fullName)
@@ -252,7 +254,7 @@ function E:RequestWipeData(fullName)
     E:Debug("Wiping data of", fullName)
     SendChatMessage(format("DKP data have been wiped for %s", fullName), "GUILD")
     local time = GetServerTime()
-    C:SendEvent("GUILD", "LOG_WIPE", fullName, time)
+    C:SendPriorityEvent("GUILD", "LOG_WIPE", fullName, time)
 end
 function E:WipeDataAll()
     if not CanEditPublicNote() then
@@ -431,7 +433,7 @@ function E:GetSortedLog(fullName, order)
 end
 
 function E:CheckForWipe(fullName, since)
-    C:SendEventTo(fullName, "LAST_WIPE_DATA_REQUEST", since)
+    C:SendPriorityEventTo(fullName, "LAST_WIPE_DATA_REQUEST", since)
 end
 
 function E:WipeLog(fullName, time)
@@ -475,7 +477,10 @@ end
 function E:RequestLastLogUpdate()
     E.lastLogUpdate = {}
     E:WaitForAll()
-    C:SendEvent("GUILD", "LAST_LOG_UPDATE_REQUEST")
+    C:SendPriorityEvent("GUILD", "LAST_LOG_UPDATE_REQUEST")
+    C_Timer.After(5, function()
+        E:UpdateLog()
+    end)
 end
 
 function E:WaitForAll(cb, playerList)
@@ -494,4 +499,16 @@ function E:WaitForAllList(cb, playerList)
             cb(player)
         end
     end
+end
+
+function E:UpdateLog()
+    E.LOG_QUEUE = {}
+    for player, time in pairs(E.lastLogUpdate) do
+        local localPlayerLastSync = Bohemian_LogConfig.playersSyncList[player] or 0
+        if time > localPlayerLastSync then
+            E:Debug("Adding request to queue for updated log from", player)
+            E.LOG_QUEUE[#E.LOG_QUEUE + 1] = {["name"] = player, ["time"] = localPlayerLastSync}
+        end
+    end
+    C:OnEvent("START_SYNC_LOG", E.LOG_QUEUE)
 end

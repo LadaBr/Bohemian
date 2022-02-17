@@ -6,6 +6,9 @@
 
 local _, E = ...
 GUILD_FRAME_PADDING_RIGHT = 10
+FRIENDS_FRAME_TAB_COUNT = 5
+
+local defaultWidth = FriendsFrame:GetWidth()
 
 function E:GuildStatus_UpdateHook()
     if E.firstLoad then
@@ -22,3 +25,15 @@ GuildFrame:HookScript("OnShow", function()
         E:RenderGuildColumnHeaders()
     end
 end)
+
+for i = 1, FRIENDS_FRAME_TAB_COUNT do
+    button = getglobal("FriendsFrameTab"..i);
+    button:HookScript("OnClick", function(...)
+        local tabIndex = PanelTemplates_GetSelectedTab(FriendsFrame)
+        if tabIndex ~= 3 then
+            if not InCombatLockdown() then
+                FriendsFrame:SetWidth(defaultWidth)
+            end
+        end
+    end)
+end

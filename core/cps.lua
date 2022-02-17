@@ -11,7 +11,6 @@ E.cps = 0
 E.cpsOverhead = 40
 
 CHUNK_HEAD_SIZE = 40
-
 local cpsFrame = CreateFrame("Frame")
 cpsFrame:SetScript("OnUpdate", function(_, elapsed)
     E.cps = math.max(E.cps - (BohemianConfig.cpsLimit * elapsed), 0)

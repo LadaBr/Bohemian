@@ -36,7 +36,7 @@ function A:COMBAT_LOG_EVENT_UNFILTERED(...)
         if subevent == "SPELL_CAST_SUCCESS" then
             if spellName == "Misdirection" then
                 if E.raidMembers[sourceName] then
-                    SendChatMessage(format("%s misdirected to %s.", destName, sourceName), "RAID")
+                    SendChatMessage(format("%s is misdirecting to %s.", sourceName, destName), "RAID")
                 end
             end
         end

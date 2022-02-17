@@ -145,7 +145,7 @@ function E:CreateGuildCraftFrame()
 
     local prevSkillFrame
     for i=1, CRAFTS_DISPLAYED do
-        local skillFrame = C:CreateFrame("Button", "$parentSkillFrame"..i, f, "SecureHandlerClickTemplate")
+        local skillFrame = C:CreateFrame("Button", "$parentSkillFrame"..i, f)
         local skillFrameText = skillFrame:CreateFontString("$parentText","ARTWORK", "GameFontNormal")
         skillFrameText:SetText("Recipe")
         skillFrameText:SetFont("Fonts\\FRIZQT__.TTF", 11)

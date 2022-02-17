@@ -156,12 +156,12 @@ function A:BID_REQUEST(amount, auctionId, isChat, sender)
     E.isBidOnCooldown = true
     C_Timer.After(Bohemian_AuctionConfig.bidCooldown, function ()
         E.isBidOnCooldown = false
-        C:SendEvent(E:GetBroadcastChannel(), E.EVENT.BID_COOLDOWN_END, auctionId)
+        C:SendPriorityEvent(E:GetBroadcastChannel(), E.EVENT.BID_COOLDOWN_END, auctionId)
     end)
     if E.countdownActive then
         E:CancelAuctionCountdown()
     end
-    C:SendEvent(E:GetBroadcastChannel(), E.EVENT.BID, newBid, sender, E.currentItem.auctionId)
+    C:SendPriorityEvent(E:GetBroadcastChannel(), E.EVENT.BID, newBid, sender, E.currentItem.auctionId)
     if Bohemian_AuctionConfig.showBidInfoInChat and tonumber(isChat) == 0 then
         SendChatMessage(format("%s bid %d DKP", strsplit("-", sender), E.currentItem.price), E.currentItem.channel)
     end
@@ -248,7 +248,7 @@ function A:AUCTION_JOIN(sender, channel)
     if not E.currentItem or not E:IsPlayerAuctionOwner() or channel ~= E.currentItem.channel then
         return
     end
-    C:SendEventTo(sender, E.EVENT.AUCTION_JOIN_RESPONSE, table.toString(E.currentItem), table.toString(E.bidInfo))
+    C:SendPriorityEventTo(sender, E.EVENT.AUCTION_JOIN_RESPONSE, table.toString(E.currentItem), table.toString(E.bidInfo))
 end
 
 function A:AUCTION_JOIN_RESPONSE(currentItem, bidInfo)

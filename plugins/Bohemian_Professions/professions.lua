@@ -237,6 +237,14 @@ function E:ShareCraftHistory()
         end
         E:Debug("Sharing craft history")
         C:BroadcastPayload("CRAFTS", "GUILD", payload)
+        if sendTo then
+            C:SendEventTo(sendTo, C.EVENT.PAYLOAD_START, "CRAFTS", #chunks, id)
+        else
+            C:SendEvent("GUILD", C.EVENT.BROADCAST_START, "CRAFTS", #chunks, id)
+            C_Timer.After(1, function()
+                C:StartBroadcastPayload(id)
+            end)
+        end
     end
 end
 
@@ -257,6 +265,7 @@ function E:ShareAllCraftHistory(sendTo)
         local interval = 0.1
         local currentInterval = 0
         local t = time()
+        --print("Sharing all crafts", sendTo)
         C:AddToUpdateQueue(function(id, elapsed)
             --currentInterval = currentInterval + elapsed
             --if currentInterval < interval then
@@ -278,6 +287,7 @@ function E:ShareAllCraftHistory(sendTo)
                         end)
                     end
                 end
+                --print("Done")
                 return
             end
             if i % 5 == 0 then

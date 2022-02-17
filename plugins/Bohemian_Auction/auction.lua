@@ -81,7 +81,7 @@ function E:StartAuction(itemLink, quantity, itemFrame)
         local itemId = select(2, strsplit(":", itemLink, 3))
         local itemName = GetItemInfo(itemId)
         local auctionId = math.random()
-        C:SendEvent(E:GetBroadcastChannel(), E.EVENT.START_AUCTION, C:GetPlayerName(true), itemId, quantity, E:GetItemMinPrice(itemName), auctionId, Bohemian_AuctionConfig.minBid)
+        C:SendPriorityEvent(E:GetBroadcastChannel(), E.EVENT.START_AUCTION, C:GetPlayerName(true), itemId, quantity, E:GetItemMinPrice(itemName), auctionId, Bohemian_AuctionConfig.minBid)
         SendChatMessage(format("Auction for %s has started. Price: %d DKP.", itemLink, E:GetItemMinPrice(itemName)), E:GetBroadcastChannel())
         if self.lastItemFrame then
             ActionButton_HideOverlayGlow(self.lastItemFrame);
@@ -160,7 +160,7 @@ function E:Bid(amount)
     if amount > 0 and amount < self.currentItem.minBid then
         return
     end
-    C:SendEvent(self:GetBroadcastChannel(), self.EVENT.BID_REQUEST, amount,  self.currentItem.auctionId, 0)
+    C:SendPriorityEvent(self:GetBroadcastChannel(), self.EVENT.BID_REQUEST, amount,  self.currentItem.auctionId, 0)
     E:Debug("Bidding", amount)
     self:EnableBidding(false)
 end
@@ -170,7 +170,7 @@ function E:Pass()
         return
     end
     self.passed = true
-    C:SendEvent(self:GetBroadcastChannel(), self.EVENT.PASS_REQUEST, self.currentItem.auctionId)
+    C:SendPriorityEvent(self:GetBroadcastChannel(), self.EVENT.PASS_REQUEST, self.currentItem.auctionId)
     E:Debug("Passing")
     self:EnableBidding(false)
     self.frames.auction.pass:Disable()
@@ -184,7 +184,7 @@ function E:EndAuction(force)
     if not force and IsShiftKeyDown() then
         self.countdownActive = true
         self.frames.auction.lootMasterFrame.award:Disable()
-        C:SendEvent(E:GetBroadcastChannel(), self.EVENT.END_AUCTION_COUNTDOWN, self.currentItem.auctionId, Bohemian_AuctionConfig.timerMax)
+        C:SendPriorityEvent(E:GetBroadcastChannel(), self.EVENT.END_AUCTION_COUNTDOWN, self.currentItem.auctionId, Bohemian_AuctionConfig.timerMax)
         return
     end
     local _, itemLink = GetItemInfo(self.currentItem.id)
@@ -204,7 +204,7 @@ function E:EndAuction(force)
 
 
     local winner = self.currentItemWinner or {}
-    C:SendEvent(
+    C:SendPriorityEvent(
             self:GetBroadcastChannel(),
             self.EVENT.END_AUCTION,
             self.currentItem.auctionId,
@@ -215,7 +215,7 @@ function E:EndAuction(force)
 end
 
 function E:CancelAuctionCountdown()
-    self:SendEvent(self:GetBroadcastChannel(), self.EVENT.END_AUCTION_COUNTDOWN_CANCEL, self.currentItem.auctionId)
+    self:SendPriorityEvent(self:GetBroadcastChannel(), self.EVENT.END_AUCTION_COUNTDOWN_CANCEL, self.currentItem.auctionId)
     self.countdownActive = false
     self:UpdateWinner()
 end
@@ -242,7 +242,7 @@ function E:ValidateBidderDKP()
     self:UpdateWinner()
     if updateHighestBidder then
         local winner = self.currentItemWinner or {}
-        C:SendEvent(self:GetBroadcastChannel(), self.EVENT.INVALIDATE_HIGHEST_BID, self.currentItem.auctionId, winner.name,  winner.bid)
+        C:SendPriorityEvent(self:GetBroadcastChannel(), self.EVENT.INVALIDATE_HIGHEST_BID, self.currentItem.auctionId, winner.name,  winner.bid)
     end
 end
 
@@ -260,7 +260,7 @@ function E:ChatBid(msg, sender)
 end
 
 function E:JoinExistingAuction()
-    C:SendEvent(E:GetBroadcastChannel(), self.EVENT.AUCTION_JOIN)
+    C:SendPriorityEvent(E:GetBroadcastChannel(), self.EVENT.AUCTION_JOIN)
 end
 
 function E:ProcessRoll(message)

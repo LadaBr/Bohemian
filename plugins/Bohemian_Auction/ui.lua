@@ -581,10 +581,10 @@ function E:CreateAuctionFrame()
 
     end)
 
-    local mode = C:CreateFrame("Button", "ButtonAuctionMode", lootMasterFrame, "SecureHandlerClickTemplate")
+    local mode = C:CreateFrame("Button", "ButtonAuctionMode", lootMasterFrame)
     mode:SetPoint("BOTTOM", 0, 16)
     mode:SetSize(28, 28)
-    mode:SetText("Cancel")
+    mode:SetHighlightTexture(nil)
     mode:RegisterForClicks("AnyUp")
     mode:SetAlpha(0.5)
     mode:SetScript("OnClick", function()
@@ -627,10 +627,10 @@ function E:ToggleRollMode()
     end
     local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture, _ = GetItemInfo(E.currentItem.id)
     if not E.isRollMode then
-        C:SendEvent(self:GetBroadcastChannel(), "ROLL_MODE_START")
+        C:SendPriorityEvent(self:GetBroadcastChannel(), "ROLL_MODE_START")
         SendChatMessage(format("You can now roll for %s", itemLink), self:GetBroadcastChannel())
     else
-        C:SendEvent(self:GetBroadcastChannel(), "ROLL_MODE_END")
+        C:SendPriorityEvent(self:GetBroadcastChannel(), "ROLL_MODE_END")
         SendChatMessage(format("You can no longer roll for %s", itemLink), self:GetBroadcastChannel())
     end
 end

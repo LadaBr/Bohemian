@@ -126,7 +126,7 @@ function E:CreateLogButton()
 end
 
 function E:CreateDKPLogHeader(name, width, text, justify, ...)
-    local date = C:CreateFrame("BUTTON", "$parentHeader"..name, BohemkaDKPLogFrame, "SecureHandlerClickTemplate");
+    local date = C:CreateFrame("BUTTON", "$parentHeader"..name, BohemkaDKPLogFrame);
     date:SetPoint(...)
     local dateFont = date:CreateFontString("$parentText","ARTWORK", "GameFontNormal")
     dateFont:SetText(text)

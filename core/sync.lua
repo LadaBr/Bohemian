@@ -21,7 +21,7 @@ function E:InitialSync()
     if count > 0 then
         E:Debug("Initial sync initialized...")
         self.isInitialSyncActive = true
-        E:SendEvent("GUILD", E.EVENT.ONLINE_CHECK)
+        E:SendPriorityEvent("GUILD", E.EVENT.ONLINE_CHECK)
     else
         E:Debug("Alone. Not syncing.")
         E:FinishSyncing()

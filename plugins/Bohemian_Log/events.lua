@@ -76,7 +76,7 @@ function A:CACHED_GUILD_DATA()
 end
 
 function A:GUILD_FRAME_UPDATE()
-    if E.initialized then
+    if E.logLoaded then
         E:UpdateDetailFrame()
     end
     if E:CanWipeData() then
@@ -103,6 +103,9 @@ function A:SYNC_READY()
         E:WaitForAll(function(player)
             E:CheckForWipe(player, 0)
         end)
+        C_Timer.After(5, function()
+            E:StartLogSyncSequence()
+        end)
     end
 end
 
@@ -111,6 +114,7 @@ function A:START_SYNC_LOG(players)
     if #players == 0 then
         E:Debug("Log is already synced.")
         E:FinishLogSync()
+        return
     end
     E:WaitForAllList(function(player)
         E:SyncLogFrom(player.name, player.time)
@@ -151,7 +155,7 @@ function A:LAST_WIPE_DATA_REQUEST(since, sender)
 
     for name, wipe in pairs(tmp) do
         total = total - 1
-        C:SendEventTo(sender, "LAST_WIPE_DATA", name, wipe, total)
+        C:SendPriorityEventTo(sender, "LAST_WIPE_DATA", name, wipe, total)
     end
 end
 
@@ -176,7 +180,7 @@ end
 function A:GUILD_MEMBER_COUNT_CHANGED(_, online)
     for player, _ in pairs(online) do
         E:CheckForWipe(player.name, 0)
-        C:SendEventTo(player.name, "LAST_LOG_UPDATE_REQUEST_SINGLE")
+        C:SendPriorityEventTo(player.name, "LAST_LOG_UPDATE_REQUEST_SINGLE")
     end
 end
 
@@ -185,7 +189,7 @@ function A:LAST_LOG_UPDATE_REQUEST(sender)
         E.EVENT_QUEUE[#E.EVENT_QUEUE + 1] = {"LAST_LOG_UPDATE_REQUEST", sender}
         return
     end
-    C:SendEventTo(sender, "LAST_LOG_UPDATE", CurrentDKPLog.current.newest)
+    C:SendPriorityEventTo(sender, "LAST_LOG_UPDATE", CurrentDKPLog.current.newest)
 end
 
 function A:LAST_LOG_UPDATE_REQUEST_SINGLE(sender)
@@ -193,7 +197,7 @@ function A:LAST_LOG_UPDATE_REQUEST_SINGLE(sender)
         E.EVENT_QUEUE[#E.EVENT_QUEUE + 1] = {"LAST_LOG_UPDATE_REQUEST", sender}
         return
     end
-    C:SendEventTo(sender, "LAST_LOG_UPDATE_SINGLE", CurrentDKPLog.current.newest)
+    C:SendPriorityEventTo(sender, "LAST_LOG_UPDATE_SINGLE", CurrentDKPLog.current.newest)
 end
 
 function A:LAST_LOG_UPDATE(time, sender)
@@ -204,14 +208,7 @@ function A:LAST_LOG_UPDATE(time, sender)
     time = tonumber(time)
     E.lastLogUpdate[sender] = time
     if not E:IsWaitingForPlayers() then
-        for player, time in pairs(E.lastLogUpdate) do
-            local localPlayerLastSync = Bohemian_LogConfig.playersSyncList[player] or 0
-            if time > localPlayerLastSync then
-                E:Debug("Adding request to queue for updated log from", player)
-                E.LOG_QUEUE[#E.LOG_QUEUE + 1] = {["name"] = player, ["time"] = localPlayerLastSync}
-            end
-        end
-        C:OnEvent("START_SYNC_LOG", E.LOG_QUEUE)
+        E:UpdateLog()
     end
 end
 

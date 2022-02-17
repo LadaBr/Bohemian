@@ -129,6 +129,7 @@ end
 function A:SYNC_DONE()
     local players = C:ProcessPlayersForSync(C.onlineChecks)
     for _, player in ipairs(players) do
-        C:SendEventTo(player.name, "CRAFT_HISTORY_REQUEST")
+        -- TODO DATE
+        -- C:SendEventTo(player.name, "CRAFT_HISTORY_REQUEST")
     end
 end
