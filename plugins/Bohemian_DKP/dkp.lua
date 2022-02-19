@@ -27,6 +27,7 @@ E.editModeSelected = {}
 E.roster = {}
 E.QUEUE = {}
 E.inProcess = {}
+E.blockedForDKPChange = {}
 
 E.EVENT = {
     DKP_CHANGED = "DKP_CHANGED"
@@ -71,7 +72,7 @@ function E:AddDKP(index, value, channel, reason, percent)
 end
 
 function E:SetInitialDKP(playerName)
-    self:SaveDKP(C.rosterIndex[playerName], Bohemian_DKPConfig.startingDKP, nil, "Initial DKP", true)
+    self:SaveDKP(C.rosterIndex[playerName], Bohemian_DKPConfig.startingDKP, nil, "Initial DKP", false)
 end
 
 function E:AwardDKPRaid(value, reason)
@@ -119,7 +120,6 @@ function E:SaveDKP(index, value, announceChannel, reason, isLocal)
         SendChatMessage(format("%s's DKP changed to %d (%s%d) for %s", strsplit("-", fullName), value, sign, diff, reason or "no reason"), announceChannel)
     end
     E.QUEUE[#E.QUEUE + 1] = function()
-        -- TODO INIT DKP SE DOJEBAVA
         if not isLocal then
             C:OnEvent(E.EVENT.DKP_CHANGED, GetServerTime(), fullName, prevValue, value, reason or "", C:GetPlayerName(true), 0)
         end

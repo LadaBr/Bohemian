@@ -34,6 +34,7 @@ E.defaultChecksumDelay = 1
 E.checksumDelay = E.defaultChecksumDelay
 E.isInitialSyncActive = true
 E.EVENT_QUEUE = {}
+
 CurrentDKPLog = {}
 
 local LibDeflate = LibStub:GetLibrary("LibDeflate")
@@ -61,6 +62,9 @@ function E:ProcessQueue()
 end
 
 function E:ProcessLog(id, time, timeSort, fullName, prev, new, reason, editor, external, reverted)
+    if not C.guildRoster[fullName] then
+        return
+    end
     if not CurrentDKPLog.current.data[fullName] then
         CurrentDKPLog.current.data[fullName] = {}
     end
@@ -98,8 +102,9 @@ end
 
 function E:ProcessCheater(fullName, prev, cur)
     self.cheaters[fullName] = true
-    -- TODO FIX CHECK TIME
-    -- E:Print(format("%s %s is a cheater! DKP edited outside of the addon! Change: %d -> %d", C:colorize("WARNING!", C.COLOR.RED), C:AddClassColorToName(fullName), prev, cur))
+    if CanEditOfficerNote() and CanEditPublicNote() then
+        E:Print(format("%s %s is a cheater! DKP edited outside of the addon! Change: %d -> %d", C:colorize("WARNING!", C.COLOR.RED), C:AddClassColorToName(fullName), prev, cur))
+    end
 end
 
 function E:DetectChanges(fullName, currentDKP)
@@ -114,6 +119,7 @@ function E:DetectChanges(fullName, currentDKP)
         if prevItem then
             if prevItem.current ~= item.prev then
                 self:ProcessCheater(fullName, prevItem.current, item.prev)
+                return
             end
         end
         prevItem = item
@@ -167,7 +173,7 @@ function E:SyncLog()
     C:SendPriorityEvent("GUILD", self.EVENT.SYNC_LOG, Bohemian_LogConfig.lastTimeOnline and Bohemian_LogConfig.lastTimeOnline - 360 or 0)
 end
 function E:SyncLogFrom(name, since)
-    E:Debug("Syncing log from", name, date('%Y/%m/%d %H:%M', since))
+    E:Print("Syncing log from", name, date('%Y/%m/%d %H:%M', since))
     C:SendPriorityEventTo(name, self.EVENT.SYNC_LOG, since or 0)
 end
 
@@ -307,9 +313,13 @@ end
 
 function E:CleanUpLogs()
     for name, data in pairs(CurrentDKPLog.current.data) do
-        for id, item in pairs(data) do
-            if item.editor == "0" or item.editor == "" then
-                CurrentDKPLog.current.data[name][id] = nil
+        if not C.guildRoster[name] then
+            CurrentDKPLog.current.data[name] = nil
+        else
+            for id, item in pairs(data) do
+                if item.editor == "0" or item.editor == "" or not item.timeSort then
+                    CurrentDKPLog.current.data[name][id] = nil
+                end
             end
         end
     end
@@ -397,9 +407,16 @@ function E:FinishLogSync()
     E.initialized = true
     E:DetectChangesAll()
     E:ProcessQueue()
+    E:Debug("Log synchronization finished in "..(time() - E.longSyncStart).."s")
+    E:CleanUpLogs()
+    C_Timer.After(10, function()
+        E:StartAntiCheat()
+    end)
 end
 
 function E:StartLogSyncSequence()
+    E.longSyncStart = time()
+    E:Debug("Synchronizing DKP log...")
     if C:GetPlayerCountWithAddon() == 0 then
         C:OnEvent("START_SYNC_LOG", E.LOG_QUEUE)
     else
@@ -476,7 +493,7 @@ end
 
 function E:RequestLastLogUpdate()
     E.lastLogUpdate = {}
-    E:WaitForAll()
+    -- E:WaitForAll()
     C:SendPriorityEvent("GUILD", "LAST_LOG_UPDATE_REQUEST")
     C_Timer.After(5, function()
         E:UpdateLog()

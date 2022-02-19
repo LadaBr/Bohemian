@@ -20,7 +20,6 @@ function A:READY()
     --E:InitDKPLog()
     --E:CleanUpLogs()
     --E:DetectChangesAll()
-    E:StartAntiCheat()
     --C_Timer.After(300, function ()
     --    E:CheckAutoBackup()
     --end)
@@ -100,11 +99,13 @@ function A:SYNC_READY()
         E:Debug("No players for wipe check. Skipping to log sync.")
         E:StartLogSyncSequence()
     else
-        E:WaitForAll(function(player)
-            E:CheckForWipe(player, 0)
-        end)
-        C_Timer.After(5, function()
-            E:StartLogSyncSequence()
+        C_Timer.After(20, function()
+            E:WaitForAll(function(player)
+                E:CheckForWipe(player, 0)
+            end)
+            C_Timer.After(5, function()
+                E:StartLogSyncSequence()
+            end)
         end)
     end
 end
@@ -112,10 +113,11 @@ end
 
 function A:START_SYNC_LOG(players)
     if #players == 0 then
-        E:Debug("Log is already synced.")
+        E:Print("Log is already synced.")
         E:FinishLogSync()
         return
     end
+    E.waitingForPlayers = {}
     E:WaitForAllList(function(player)
         E:SyncLogFrom(player.name, player.time)
     end, players)
@@ -125,10 +127,10 @@ function A:PAYLOAD_PROCESSED(type, _, sender)
     if type == "SYNC_LOG" then
         local chunks = C:GetPlayerChunks(name, type)
         if #chunks == 0 then
-            E.waitingForPlayers[sender] = false
-            E:Debug("Synced log of", sender)
+            E.waitingForPlayers[sender] = nil
+            E:Debug("Synced log of", sender, "Waiting for more:", E:IsWaitingForPlayers() )
             Bohemian_LogConfig.playersSyncList[sender] = GetServerTime()
-            if not E:IsWaitingForPlayers() then
+            if not E:IsWaitingForPlayers() and not E.initialized then
                 E:Debug("Log was synced to latest version")
                 E:FinishLogSync()
             end
@@ -207,9 +209,6 @@ function A:LAST_LOG_UPDATE(time, sender)
     E.waitingForPlayers[sender] = nil
     time = tonumber(time)
     E.lastLogUpdate[sender] = time
-    if not E:IsWaitingForPlayers() then
-        E:UpdateLog()
-    end
 end
 
 function A:LAST_LOG_UPDATE_SINGLE(time, sender)

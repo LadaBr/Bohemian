@@ -392,7 +392,7 @@ function E:UpdateCheaters()
             if i <= numMembers then
                 local btn = _G["GuildFrameGuildStatusButton"..i.."Note"]
                 local dkp = C:GetModule("Bohemian_DKP"):NoteDKPToNumber(note)
-                if self.cheaters[fullName] then
+                if self.cheaters[fullName] and dkp then
                     dkp = C:colorize(dkp, C.COLOR.RED)
                     btn:SetText(dkp)
                 end

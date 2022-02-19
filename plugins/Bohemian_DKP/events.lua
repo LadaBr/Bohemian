@@ -54,7 +54,11 @@ function A:CACHED_GUILD_DATA()
                 if note ~= nil and note ~= "" then
                     GuildRosterSetOfficerNote(i, note)
                 end
-                self:SaveDKP(i, currentDKP, nil, "Initial DKP")
+                C_Timer.After(math.random(1, 20), function()
+                    if not E.roster[fullName] then
+                        E:SetInitialDKP(fullName)
+                    end
+                end)
             elseif E.inProcess[fullName] and currentDKP ~= nil then
                 E.inProcess[fullName] = nil
             end

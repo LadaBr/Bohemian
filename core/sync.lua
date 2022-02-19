@@ -37,7 +37,7 @@ function E:FinishSyncing()
         E.syncFinished = true
         E:OnEvent("SYNC_READY")
         E:OnEvent("SYNC_DONE")
-        E:Debug("Initial sync finished.")
+        E:Print("Initialized.")
     end
 end
 
