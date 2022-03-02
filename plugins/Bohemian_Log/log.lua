@@ -104,10 +104,10 @@ function E:GetGuildLog()
 end
 
 function E:ProcessCheater(fullName, prev, cur)
-    --self.cheaters[fullName] = true
-    --if CanEditOfficerNote() and CanEditPublicNote() then
-    --    E:Print(format("%s %s is a cheater! DKP edited outside of the addon! Change: %d -> %d", C:colorize("WARNING!", C.COLOR.RED), C:AddClassColorToName(fullName), prev, cur))
-    --end
+    if CanEditOfficerNote() and CanEditPublicNote() then
+        --E:Print(format("%s %s is a cheater! DKP edited outside of the addon! Change: %d -> %d", C:colorize("WARNING!", C.COLOR.RED), C:AddClassColorToName(fullName), prev, cur))
+        self.cheaters[fullName] = true
+    end
 end
 
 function E:DetectChanges(fullName, currentDKP)
