@@ -358,6 +358,7 @@ function E:AddLFGFrameButton()
     font = dkpButton:CreateFontString("$parentText","ARTWORK", "GameFontHighlightSmall")
     font:SetText("DKP")
     font:SetPoint("RIGHT", dkpButton, "LEFT", -3, 1)
+    E:RenderColumns()
 end
 
 function E:CreateDKPCheckButton(index)

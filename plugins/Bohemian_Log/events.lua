@@ -142,6 +142,9 @@ function A:LAST_WIPE_DATA_REQUEST(since, sender)
     since = tonumber(since)
     local tmp = {}
     local total = 0
+    if not CurrentDKPLog.current then
+        return
+    end
     for name, wipes in pairs(CurrentDKPLog.current.wipes) do
         for _, wipe in pairs(wipes) do
             if wipe >= since then

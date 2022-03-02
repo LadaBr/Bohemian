@@ -37,7 +37,7 @@ function E:LoadDefaults()
     if not Bohemian_DKPConfig then
         Bohemian_DKPConfig = {}
     end
-    Bohemian_DKPConfig.showDKP = Bohemian_DKPConfig.showDKP or true
+    Bohemian_DKPConfig.showDKP = Bohemian_DKPConfig.showDKP == nil and true or Bohemian_DKPConfig.showDKP
     Bohemian_DKPConfig.bossRewards = Bohemian_DKPConfig.bossRewards or {}
     Bohemian_DKPConfig.startingDKP = Bohemian_DKPConfig.startingDKP or 100
 end

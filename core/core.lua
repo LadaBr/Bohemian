@@ -21,7 +21,7 @@ updateFrame:SetScript("OnUpdate", function(_, elapsed)
     end
 end)
 function E:Load()
-    BohemianConfig.debug = BohemianConfig.debug or false
+    BohemianConfig.debug = BohemianConfig.debug == nil and false or BohemianConfig.debug
     BohemianConfig.cpsLimit = BohemianConfig.cpsLimit or 2000
 
     E.onlineSince = GetServerTime()

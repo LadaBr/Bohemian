@@ -4,7 +4,18 @@
 --- DateTime: 07.02.2022 18:24
 ---
 local AddonName, E = ...
-Bohemian.RegisterModule(AddonName, E)
+
+
+Bohemian_ProfessionsConfig = {
+    showProfessions = true,
+    showOwnReagents = true,
+    showOfflineMembers = true,
+    collapsed = {},
+}
+Bohemian.RegisterModule(AddonName, E, function()
+
+    Bohemian_ProfessionsConfig.lastCraftSync = Bohemian_ProfessionsConfig.lastCraftSync or {}
+end)
 
 local C = E.CORE
 E.sharedCrafts = {}
@@ -17,14 +28,6 @@ if not Crafts then
 end
 
 
-if not Bohemian_ProfessionsConfig then
-    Bohemian_ProfessionsConfig = {
-        showProfessions = true,
-        showOwnReagents = true,
-        showOfflineMembers = true,
-        collapsed = {},
-    }
-end
 
 
 E.EVENT = {
@@ -129,7 +132,7 @@ function E:ShareCrafts()
             table.insert(reagents, table.concat(table.removeNil({reagentTexture, reagentCount, playerReagentCount, reagentLink}), "~"))
         end
         reagents = table.concat(reagents, "*")
-        table.insert(payload, C:PreparePayload(self.EVENT.CRAFT, profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, i, minMade, maxMade))
+        table.insert(payload, C:PreparePayload(self.EVENT.CRAFT, profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, i, minMade, maxMade, E.sharedCrafts[profName]))
         i = i + 1
     end)
 end
@@ -184,7 +187,7 @@ function E:ShareTradeSkills()
                 C:RemoveFromUpdateQueue(id)
                 return
             end
-            table.insert(payload, C:PreparePayload(E.EVENT.CRAFT, profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, i, minMade, maxMade))
+            table.insert(payload, C:PreparePayload(E.EVENT.CRAFT, profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, i, minMade, maxMade, E.sharedCrafts[profName]))
         end
         i = i + 1
     end)
@@ -370,7 +373,7 @@ function E:FilterCraftPlayers(searchValue)
     for playerName, professions in pairs(E:GetGuildCrafts()) do
         for profName, profession in pairs(professions) do
             for craftName, data in pairs(profession) do
-                if string.find(strlower(craftName), searchValue) then
+                if string.find(strlower(craftName), strlower(searchValue)) then
                     if not result[playerName] then
                         result[playerName] = {}
                     end

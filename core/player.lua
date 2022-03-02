@@ -17,7 +17,7 @@ function E:GetPlayerName(useFullName)
         if not fullName then
             return
         end
-        return fullName.."-"..(realm or GetNormalizedRealmName())
+        return fullName.."-"..(realm or GetNormalizedRealmName() or "")
     end
     return UnitName("player")
 end

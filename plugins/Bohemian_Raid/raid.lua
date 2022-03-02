@@ -9,8 +9,8 @@ Bohemian_RaidConfig = {}
 E.raidMembers = {}
 
 Bohemian.RegisterModule(AddonName, E, function()
-    Bohemian_RaidConfig.announceParry = Bohemian_RaidConfig.announceParry or true
-    Bohemian_RaidConfig.announceMD = Bohemian_RaidConfig.announceMD or true
+    Bohemian_RaidConfig.announceParry = Bohemian_RaidConfig.announceParry == nil and true or Bohemian_RaidConfig.announceParry
+    Bohemian_RaidConfig.announceMD = Bohemian_RaidConfig.announceMD == nil and true or Bohemian_RaidConfig.announceMD
     E:AddConfigFrames(E.CORE:CreateModuleInterfaceConfig("Raid"))
 end)
 

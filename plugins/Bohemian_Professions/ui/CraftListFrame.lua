@@ -480,7 +480,7 @@ function E:RenderCraftsMulti(searchValue)
                         local add = false
                         for craftName, _ in pairs(profession) do
                             if searchValue then
-                                if not add and string.find(strlower(craftName), searchValue) then
+                                if not add and string.find(strlower(craftName), strlower(searchValue)) then
                                     add = true
                                 end
                             else

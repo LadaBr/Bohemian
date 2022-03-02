@@ -65,6 +65,9 @@ function E:ProcessLog(id, time, timeSort, fullName, prev, new, reason, editor, e
     if not C.guildRoster[fullName] then
         return
     end
+    if not CurrentDKPLog.current then
+        return
+    end
     if not CurrentDKPLog.current.data[fullName] then
         CurrentDKPLog.current.data[fullName] = {}
     end
@@ -101,10 +104,10 @@ function E:GetGuildLog()
 end
 
 function E:ProcessCheater(fullName, prev, cur)
-    self.cheaters[fullName] = true
-    if CanEditOfficerNote() and CanEditPublicNote() then
-        E:Print(format("%s %s is a cheater! DKP edited outside of the addon! Change: %d -> %d", C:colorize("WARNING!", C.COLOR.RED), C:AddClassColorToName(fullName), prev, cur))
-    end
+    --self.cheaters[fullName] = true
+    --if CanEditOfficerNote() and CanEditPublicNote() then
+    --    E:Print(format("%s %s is a cheater! DKP edited outside of the addon! Change: %d -> %d", C:colorize("WARNING!", C.COLOR.RED), C:AddClassColorToName(fullName), prev, cur))
+    --end
 end
 
 function E:DetectChanges(fullName, currentDKP)
@@ -173,7 +176,7 @@ function E:SyncLog()
     C:SendPriorityEvent("GUILD", self.EVENT.SYNC_LOG, Bohemian_LogConfig.lastTimeOnline and Bohemian_LogConfig.lastTimeOnline - 360 or 0)
 end
 function E:SyncLogFrom(name, since)
-    E:Print("Syncing log from", name, date('%Y/%m/%d %H:%M', since))
+    E:Debug("Syncing log from", name, date('%Y/%m/%d %H:%M', since))
     C:SendPriorityEventTo(name, self.EVENT.SYNC_LOG, since or 0)
 end
 
@@ -464,7 +467,7 @@ function E:WipeLog(fullName, time)
             end
         end
     end
-    E:Print("Wiped log of", fullName)
+    E:Debug("Wiped log of", fullName)
     E:UpdateDetailFrame()
 end
 

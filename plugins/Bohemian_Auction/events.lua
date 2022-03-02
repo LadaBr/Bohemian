@@ -14,6 +14,7 @@ C:RegisterEvent('CHAT_MSG_RAID_LEADER')
 C:RegisterEvent('CHAT_MSG_PARTY')
 C:RegisterEvent('CHAT_MSG_PARTY_LEADER')
 C:RegisterEvent('CHAT_MSG_SYSTEM')
+C:RegisterEvent('GET_ITEM_INFO_RECEIVED')
 
 function A:CHAT_MSG_GUILD(...)
     E:ChatBid(...)
@@ -66,6 +67,14 @@ function A:START_AUCTION(owner, itemId, quantity, price, auctionId, minBid)
         E:LoadAuctionData(itemId, quantity, price, itemName, itemRarity, itemTexture)
     end
     A:BID_COOLDOWN_END(auctionId)
+end
+
+function A:GET_ITEM_INFO_RECEIVED(itemId, success)
+    if E.waitForItemInfo and success and itemId == E.currentItem.id then
+        E.waitForItemInfo = false
+        local itemName, _, itemRarity, _, _, _, _, _, _, itemTexture, _ = GetItemInfo(itemId)
+        E:LoadAuctionData(itemId,  E.currentItem.quantity,  E.currentItem.price, itemName, itemRarity, itemTexture)
+    end
 end
 
 function A:BID(value, sender, auctionId)
