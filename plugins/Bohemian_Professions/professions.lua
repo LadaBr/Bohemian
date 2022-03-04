@@ -132,7 +132,7 @@ function E:ShareCrafts()
             table.insert(reagents, table.concat(table.removeNil({reagentTexture, reagentCount, playerReagentCount, reagentLink}), "~"))
         end
         reagents = table.concat(reagents, "*")
-        table.insert(payload, C:PreparePayload(self.EVENT.CRAFT, profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, i, minMade, maxMade, E.sharedCrafts[profName]))
+        table.insert(payload, C:PreparePayload(self.EVENT.CRAFT, profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, i, minMade, maxMade))
         i = i + 1
     end)
 end
@@ -187,7 +187,7 @@ function E:ShareTradeSkills()
                 C:RemoveFromUpdateQueue(id)
                 return
             end
-            table.insert(payload, C:PreparePayload(E.EVENT.CRAFT, profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, i, minMade, maxMade, E.sharedCrafts[profName]))
+            table.insert(payload, C:PreparePayload(E.EVENT.CRAFT, profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, i, minMade, maxMade))
         end
         i = i + 1
     end)
