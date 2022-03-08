@@ -288,6 +288,7 @@ function E:RefreshDKPLog(fullName)
     self.sortedLog = sortedLog
     FauxScrollFrame_Update(BohemkaDKPLogFrameScrollFrame, #sortedLog, DKP_LOG_ROW_AMOUNT, DKP_LOG_ROW_HEIGHT)
     self:UpdateDKPLog()
+    E:DetectChanges(fullName, E:GetCurrentDKP(fullName))
 end
 
 function E:UpdateDetailFrame()

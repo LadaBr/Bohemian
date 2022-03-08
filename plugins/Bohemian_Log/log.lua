@@ -100,7 +100,9 @@ end
 function E:CheckSuspects()
     for name, dkp in pairs(E.suspects) do
         E:DetectChanges(name, dkp)
-        E.suspects[name] = nil
+        if not self.cheaters[name] then
+            E.suspects[name] = nil
+        end
     end
 end
 
