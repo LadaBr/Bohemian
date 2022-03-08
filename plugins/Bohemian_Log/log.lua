@@ -65,6 +65,7 @@ function E:ProcessLog(id, time, timeSort, fullName, prev, new, reason, editor, e
     if not C.guildRoster[fullName] then
         return
     end
+
     if not CurrentDKPLog.current then
         return
     end
@@ -81,7 +82,12 @@ function E:ProcessLog(id, time, timeSort, fullName, prev, new, reason, editor, e
     reverted = reverted == "1"
 
     local current = tonumber(new)
-    CurrentDKPLog.current.data[fullName][id] = { id = id, time = time, prev = tonumber(prev), current = current, reason = reason, editor = editor, external = isExternal, reverted = reverted, timeSort = timeSort }
+    local item = { id = id, time = time, prev = tonumber(prev), current = current, reason = reason, editor = editor, external = isExternal, reverted = reverted, timeSort = timeSort }
+    if not E:ValidateLogItem(item) then
+        E:Debug("Invalid log item editor", editor)
+        return
+    end
+    CurrentDKPLog.current.data[fullName][id] = item
     local currentFullName = GetGuildRosterInfo(GetGuildRosterSelection());
     E.suspects[fullName] = current
     CurrentDKPLog.current.oldest = (CurrentDKPLog.current.oldest > time or CurrentDKPLog.current.oldest == 0) and time or CurrentDKPLog.current.oldest
@@ -316,16 +322,38 @@ end
 
 function E:CleanUpLogs()
     for name, data in pairs(CurrentDKPLog.current.data) do
-        if not C.guildRoster[name] then
+        if not string.find(name, GetNormalizedRealmName()) then
             CurrentDKPLog.current.data[name] = nil
         else
             for id, item in pairs(data) do
-                if item.editor == "0" or item.editor == "" or not item.timeSort then
+                if not E:ValidateLogItem(item) then
+                    E:Debug("Deleting invalid log item")
+                    E:Debug(CurrentDKPLog.current.data[name][id])
                     CurrentDKPLog.current.data[name][id] = nil
                 end
             end
         end
     end
+end
+
+local pattern = "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"
+function E:ValidateLogItem(item)
+    if not item.id:match(pattern) then
+        return false
+    end
+    if not string.find(item.editor, GetNormalizedRealmName()) then
+        return false
+    end
+    if not item.prev or not item.current then
+        return false
+    end
+    if item.editor == "0" or item.editor == "" or not item.editor then
+        return false
+    end
+    if not item.timeSort then
+        return false
+    end
+    return true
 end
 
 function E:DeleteBackup(time)

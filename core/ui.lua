@@ -463,9 +463,12 @@ function E:CreateInterfaceConfig()
     font:SetText("Debug")
     local title, _ = E:AddConfigEditBox(f, {"TOPLEFT", f, "TOPLEFT", 30, -26}, "CpsLimit", "Bandwith", BohemianConfig.cpsLimit, "CPS")
 
+    E:AddModuleControl()
+
     BohemkaDKPInterfaceOptionsPanel.okay = function()
         BohemianConfig.debug = BohemkaDKPInterfaceOptionsPanelDebug:GetChecked()
         BohemianConfig.cpsLimit = BohemkaDKPInterfaceOptionsPanelEditBoxCpsLimit:GetNumber()
+        E:SendRequiredModules()
     end
     BohemkaDKPInterfaceOptionsPanel.cancel = function()
         BohemkaDKPInterfaceOptionsPanelDebug:SetChecked(BohemianConfig.debug)
@@ -556,4 +559,51 @@ function E:UpdateGMOTDState()
         GuildFrameNotesText:Hide()
         GuildMOTDEditButton:Hide()
     end
+end
+
+function E:AddModuleControl()
+    local font = BohemkaDKPInterfaceOptionsPanel:CreateFontString("$parentModuleControl","ARTWORK", "GameFontNormal")
+    font:SetJustifyH("LEFT")
+    font:SetSize(300, 14)
+    font:SetPoint("TOPLEFT", 30, -66)
+    font:SetText("Guild Module Control")
+end
+
+function E:UpdateModuleControlItems()
+    for name, _ in pairs(self.MODULES) do
+        local required = BohemianConfig.requiredModules[name]
+        local module = _G["BohemkaDKPInterfaceOptionsPanelModule"..name]
+        if module then
+            module:SetChecked(required)
+            if not IsGuildLeader() then
+                module:Disable()
+            end
+        end
+    end
+end
+
+function E:AddModuleControlItem(name, title)
+    local item = E:CreateFrame("CheckButton", "$parentModule"..name, BohemkaDKPInterfaceOptionsPanel, "UICheckButtonTemplate");
+    item:SetSize(22,22)
+    item:SetPoint("TOPLEFT", E.lastModuleControlItem or BohemkaDKPInterfaceOptionsPanelModuleControl, "BOTTOMLEFT", 0, -5)
+    item:SetChecked(BohemianConfig.requiredModules[name] or false)
+    if not IsGuildLeader() then
+        item:Disable()
+    end
+    local font = item:CreateFontString("$parentText","ARTWORK", "GameFontNormal")
+    font:SetJustifyH("LEFT")
+    font:SetSize(200, 14)
+    font:SetPoint("LEFT", item, "RIGHT", 5, 0)
+    font:SetText(title)
+    local okay = BohemkaDKPInterfaceOptionsPanel.okay
+    BohemkaDKPInterfaceOptionsPanel.okay = function()
+        BohemianConfig.requiredModules[name] = item:GetChecked()
+        okay()
+    end
+    local cancel = BohemkaDKPInterfaceOptionsPanel.cancel
+    BohemkaDKPInterfaceOptionsPanel.cancel = function()
+        cancel()
+        item:SetChecked(BohemianConfig.requiredModules[name])
+    end
+    E.lastModuleControlItem = item
 end

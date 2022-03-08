@@ -80,3 +80,11 @@ function E:GetPlayerCountWithAddon()
     end
     return total
 end
+
+function E:GetGuildMaster()
+    for _, player in pairs(self.guildRoster) do
+        if player[3] == 0 then
+            return player
+        end
+    end
+end

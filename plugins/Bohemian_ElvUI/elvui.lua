@@ -16,6 +16,9 @@ local blacklist = {
     "GuildCraftListFrameHighlight",
     "ButtonAuctionMode"
 }
+local whitelist = {
+    "BohemkaDKPInterfaceOptionsPanelModule"
+}
 local stripOnly = {
     "DKPLogFrameHeader",
     "DetailFrameDKPFrame",
@@ -221,11 +224,21 @@ function E:ProcessModules()
 end
 
 function E:ProcessFrame(type, name)
-    for _, item in ipairs(blacklist) do
+    local whiteListed = false
+    for _, item in ipairs(whitelist) do
         if string.find(name, item) then
-            return
+            whiteListed = true
+            break
         end
     end
+    if not whiteListed then
+        for _, item in ipairs(blacklist) do
+            if string.find(name, item) then
+                return
+            end
+        end
+    end
+
     for _, item in ipairs(stripOnly) do
         if string.find(name, item) then
             _G[name]:StripTextures()

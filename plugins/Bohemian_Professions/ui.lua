@@ -205,9 +205,3 @@ function E:UpdateDetailFrame()
     end
 end
 
-
-E:CreateGuildFrameProfessionsColumnHeader()
-E:CreateGuildCraftFrame()
-E:AddLFGFrameButton()
-E:CreateGuildCraftListFrame()
-E:AdjustDetailFrame()

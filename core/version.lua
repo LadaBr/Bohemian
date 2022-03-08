@@ -1,6 +1,6 @@
 local _, E = ...
 
-E.versions = {}
+
 
 
 function E:GetAddonVersion()
@@ -36,7 +36,7 @@ function E:CanAnnounceNewVersion()
 end
 function E:VersionCheck()
     local tmp = {}
-    for player, version in pairs(self.versions) do
+    for player, version in pairs(BohemianConfig.versions) do
         tmp[#tmp + 1] = {player = player, version = self:GetAddonVersionNum(version), versionTxt = version }
     end
     table.sort(tmp, function(a,b) return a.version > b.version end)

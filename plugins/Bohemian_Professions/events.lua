@@ -122,15 +122,36 @@ function A:GUILD_MEMBER_COUNT_CHANGED(_, online)
 end
 
 function A:CRAFT_HISTORY_REQUEST(sender)
-    E:ShareAllCraftHistory(sender)
+    if not IsInInstance() then
+        E:ShareAllCraftHistory(sender)
+    end
 end
 
+E.onlineSince = {}
 function A:SYNC_DONE()
-    local players = C:ProcessPlayersForSync(C.onlineChecks)
-    for _, player in ipairs(players) do
-        -- TODO DATE
-        C:SendEventTo(player.name, "CRAFT_HISTORY_REQUEST")
+    C:SendEvent("GUILD", "CRAFT_HISTORY_CHECK")
+    C_Timer.After(5, function()
+        local players = C:ProcessPlayersForSync(E.onlineSince)
+        E.onlineSince = {}
+        for _, player in ipairs(players) do
+            -- TODO DATE
+            C:SendEventTo(player.name, "CRAFT_HISTORY_REQUEST")
+        end
+    end)
+
+end
+
+function A:CRAFT_HISTORY_CHECK(sender)
+    if sender == C:GetPlayerName(true) then
+        return
     end
+    if not IsInInstance() then
+        C:SendEventTo(sender, "CRAFT_HISTORY_CHECK_RESPONSE", C.onlineSince)
+    end
+end
+
+function A:CRAFT_HISTORY_CHECK_RESPONSE(since, sender)
+    E.onlineSince[sender] = { onlineSince = tonumber(since) }
 end
 
 --function A:PAYLOAD_PROCESSED(type, _, sender)

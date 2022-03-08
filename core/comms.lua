@@ -31,17 +31,13 @@ function E:SendPriorityEvent(channel, event, ...)
     self:SendAddonPriorityMessage(payload, channel)
 end
 
-function E:TrackStats(payload, event, target)
-    local cps = #payload + self.cpsOverhead
-    if cps > self:GetCPSLimit() then
-        if not E.queueStats[event] then
-            E.queueStats[event] = {}
-        end
-        if not E.queueStats[event][target] then
-            E.queueStats[event][target] = 0
-        end
-        E.queueStats[event][target] = E.queueStats[event][target] + 1
+function E:ReportStats()
+    for id, chunk in pairs(E.chunks) do
+
     end
+    C_Timer.After(5, function()
+        E:ReportStats()
+    end)
 end
 
 
@@ -117,7 +113,7 @@ end
 function E:PreparePayloadForSend(data)
     local id = E:uuid()
     data = self:EncodePayload(data)
-    local chunks = self:splitStringByChunks(data, 180 - CHUNK_HEAD_SIZE - #id)
+    local chunks = self:splitStringByChunks(data, 250 - CHUNK_HEAD_SIZE - #id)
     local totalSize = #data + (#chunks * (self.cpsOverhead + CHUNK_HEAD_SIZE + #id))
     self:Debug("Sending data with size of", totalSize, "|| chunks:", #chunks)
     self:Debug("Sending will take", totalSize / BohemianConfig.cpsLimit, "seconds")

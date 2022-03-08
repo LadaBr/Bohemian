@@ -8,5 +8,4 @@
 
 dkp.lua
 ui.lua
-hooks.lua
 events.lua

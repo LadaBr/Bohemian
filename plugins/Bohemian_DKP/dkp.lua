@@ -8,7 +8,6 @@ local AddonName, E = ...
 
 Bohemian.RegisterModule(AddonName, E, function()
     E:LoadDefaults()
-
     E:CreateGuildFrameEditModeButtons()
     E:CreateGuildFrameDKPButton()
     E:CreateGuildFrameGuildStatusNoteColumnHeader()

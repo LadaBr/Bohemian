@@ -20,9 +20,12 @@ updateFrame:SetScript("OnUpdate", function(_, elapsed)
         item(elapsed)
     end
 end)
+
 function E:Load()
     BohemianConfig.debug = BohemianConfig.debug == nil and false or BohemianConfig.debug
     BohemianConfig.cpsLimit = BohemianConfig.cpsLimit or 2000
+    BohemianConfig.requiredModules = BohemianConfig.requiredModules or {}
+    BohemianConfig.versions = BohemianConfig.versions or {}
 
     E.onlineSince = GetServerTime()
     E.FRIENDS_FRAME_DEFAULT_WIDTH = FriendsFrame:GetWidth()
@@ -99,7 +102,6 @@ end
 function E:ExecuteEvent(frame, event, ...)
     if frame.EVENTS[event] then
         frame.EVENTS[event](frame, ...)
-        self:Debug(frame.NAME, "Executing", event, ...)
     end
 end
 
@@ -121,7 +123,7 @@ function E:ProcessModuleQueue(module)
     local i = #E.MODULE_QUEUE[module.NAME]
     while #E.MODULE_QUEUE[module.NAME] > 0 do
         local event = table.remove(E.MODULE_QUEUE[module.NAME], i)
-        E:OnEvent(unpack(event))
+        E:ExecuteEvent(module, unpack(event))
         i = i - 1
     end
 end
@@ -129,7 +131,6 @@ end
 
 function E:OnEvent(event, ...)
     local args = { ... }
-    E:Debug("Received event", event, "| args:", ...)
     self:ExecuteEvent(self, event, ...)
     self:CallModules(function(module)
         if module.isLoaded then
@@ -147,13 +148,15 @@ function E:CallModules(cb)
 end
 
 function E:LoadModules()
-    local playerName = self:GetPlayerName()
-    for _, module in ipairs(self.AVAILABLE_MODULES) do
-        local enabled = GetAddOnEnableState(playerName, module)
-        if enabled then
-            self:Debug("Loading module", module)
-            LoadAddOn(module)
+    for name, module in pairs(self.MODULES) do
+        self:Debug("Loading module", name)
+        if module.OnLoad then
+            module.OnLoad(module.module)
         end
+        module.module.isLoaded = true
+        E:OnEvent("MODULE_LOADED", module.module)
+        E:ProcessModuleQueue(module.module)
+        E:GuildStatus_UpdateHook()
     end
 end
 
@@ -198,4 +201,32 @@ function E:CreateFrame(type, ...)
     E.FRAMES[type][frameName] = frame
     E:OnEvent("FRAME_CREATED", frameName, type)
     return frame
+end
+
+function E:SendRequiredModules(sender)
+    local data = {}
+    for name, required in pairs(BohemianConfig.requiredModules) do
+        if required then
+            data[#data + 1] = name
+        end
+    end
+    if #data > 0 then
+        data = table.concat(data, ",")
+        local lastUpdate = BohemianConfig.requiredModulesLastUpdate or GetServerTime()
+        if sender then
+            E:SendPriorityEventTo(sender, "REQUIRED_MODULES", data, lastUpdate)
+        else
+            E:SendPriorityEvent("GUILD", "REQUIRED_MODULES", data, lastUpdate)
+        end
+
+    end
+end
+
+function E:Init()
+    if E.disabled or E.initialized then
+        return
+    end
+    E.initialized = true
+    E:LoadModules()
+    E:InitialSync()
 end
