@@ -27,7 +27,7 @@ E.COMMAND = {
     DEBUG = 'debug'
 }
 
-E.EVENT_SEPARATOR = "\a"
+E.EVENT_SEPARATOR = "\010"
 E.COMPRESSED_SEPARATOR = ";"
 
 E.EVENT = {

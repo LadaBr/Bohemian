@@ -34,17 +34,42 @@ end
 function E:CanAnnounceNewVersion()
     return GetServerTime() - (self.lastVersionAnnounce or 0 ) > 1800
 end
-function E:VersionCheck()
+
+function E:GetLatestVersion()
     local tmp = {}
     for player, version in pairs(BohemianConfig.versions) do
         tmp[#tmp + 1] = {player = player, version = self:GetAddonVersionNum(version), versionTxt = version }
     end
     table.sort(tmp, function(a,b) return a.version > b.version end)
-    if #tmp > 0 then
-        local myVersion = self:GetAddonVersionNum(self:GetAddonVersion())
-        if myVersion < tmp[1].version and self:CanAnnounceNewVersion() then
-            self:Print(self:colorize(self.STRING.OUT_OF_DATE, self.COLOR.WHITE)..self:colorize(self:GetAddonVersion(), self.COLOR.RED).." -> ".. self:colorize(tmp[1].versionTxt, self.COLOR.GREEN))
-            self.lastVersionAnnounce = GetServerTime()
+    return #tmp > 0 and tmp[1].versionTxt or self:GetAddonVersion()
+end
+
+function E:VersionCheck()
+    local latest = E:GetLatestVersion()
+    local myVersion = self:GetAddonVersionNum(self:GetAddonVersion())
+    if myVersion < self:GetAddonVersionNum(latest) and self:CanAnnounceNewVersion() then
+        self:Print(self:colorize(self.STRING.OUT_OF_DATE, self.COLOR.WHITE)..self:colorize(self:GetAddonVersion(), self.COLOR.RED).." -> ".. self:colorize(latest, self.COLOR.GREEN))
+        self.lastVersionAnnounce = GetServerTime()
+    end
+end
+
+function E:GetPlayersVersion()
+    local latest = E:GetLatestVersion()
+    local latestNum = self:GetAddonVersionNum(latest)
+    local data = {
+        current = {},
+        old = {},
+        missing = {},
+    }
+    for player, data in pairs(E.guildRoster) do
+        local version = BohemianConfig.versions[player]
+        if not version then
+            data.missing = player
+        elseif self:GetAddonVersionNum(version) < latestNum then
+            data.old = player
+        else
+            data.current = player
         end
     end
+    return data
 end

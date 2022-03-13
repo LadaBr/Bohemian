@@ -247,7 +247,6 @@ function E:ShareCraftHistory()
             end
         end
         E:Debug("Sharing craft history")
-        C:BroadcastPayload("CRAFTS", "GUILD", payload)
         if sendTo then
             C:SendEventTo(sendTo, C.EVENT.PAYLOAD_START, "CRAFTS", #chunks, id)
         else

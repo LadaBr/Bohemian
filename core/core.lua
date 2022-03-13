@@ -128,7 +128,6 @@ function E:ProcessModuleQueue(module)
     end
 end
 
-
 function E:OnEvent(event, ...)
     local args = { ... }
     self:ExecuteEvent(self, event, ...)
@@ -148,15 +147,18 @@ function E:CallModules(cb)
 end
 
 function E:LoadModules()
-    for name, module in pairs(self.MODULES) do
+    for _, name in pairs(self.AVAILABLE_MODULES) do
         self:Debug("Loading module", name)
-        if module.OnLoad then
-            module.OnLoad(module.module)
+        local module = self.MODULES[name]
+        if module then
+            if module.OnLoad then
+                module.OnLoad(module.module)
+            end
+            module.module.isLoaded = true
+            E:OnEvent("MODULE_LOADED", module.module)
+            E:ProcessModuleQueue(module.module)
+            E:GuildStatus_UpdateHook()
         end
-        module.module.isLoaded = true
-        E:OnEvent("MODULE_LOADED", module.module)
-        E:ProcessModuleQueue(module.module)
-        E:GuildStatus_UpdateHook()
     end
 end
 

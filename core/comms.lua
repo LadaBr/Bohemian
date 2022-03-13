@@ -47,6 +47,9 @@ function E:SendEventTo(target, event, ...)
     if not payload then
         return
     end
+    if #payload > 254 then
+        E:SendPayloadTo(target, "GENERAL", payload)
+    end
     -- TODO FIND SOME WAY TO CHECK IF PLAYER IS ONLINE, CLIENT CACHING IS TOO SLOW
     --if not payload or (self.guildRoster[target] and not self.guildRoster[target][9] and E.stopIgnoringOffline) then
     --    self:Print("Event skipped. Player is offline or payload is empty.", online)
@@ -59,22 +62,25 @@ end
 function E:SendPriorityEventTo(target, event, ...)
     self:Debug(event, "Processing payload for event", ...)
     local payload = self:PreparePayload(self.EVENT.WHISPER, event, target, ...)
+    if #payload > 254 then
+        E:SendPayloadTo(target, "GENERAL", payload)
+    end
     self:Debug(event, "Sending event to", target, payload)
     self:SendAddonPriorityMessage(payload, "GUILD")
 end
 
-function E:SendAddonMessage(payload, ...)
+function E:SendAddonMessage(payload, target)
     local cps = #payload + self.cpsOverhead
     if cps > self:GetCPSLimit() then
-        table.insert(self.cpsQueue, {payload, ...})
+        table.insert(self.cpsQueue, {payload, target})
         return
     end
     self.cps = self.cps + cps
-    C_ChatInfo.SendAddonMessage(self.NAME, payload, ...)
+    C_ChatInfo.SendAddonMessage(self.NAME, payload, target)
 end
 
-function E:SendAddonPriorityMessage(payload, ...)
-    C_ChatInfo.SendAddonMessage(self.NAME, payload, ...)
+function E:SendAddonPriorityMessage(payload, target)
+    C_ChatInfo.SendAddonMessage(self.NAME, payload, target)
 end
 
 function E:PreparePayload(event, ...)
@@ -113,7 +119,7 @@ end
 function E:PreparePayloadForSend(data)
     local id = E:uuid()
     data = self:EncodePayload(data)
-    local chunks = self:splitStringByChunks(data, 250 - CHUNK_HEAD_SIZE - #id)
+    local chunks = self:splitStringByChunks(data, 254 - CHUNK_HEAD_SIZE - #id)
     local totalSize = #data + (#chunks * (self.cpsOverhead + CHUNK_HEAD_SIZE + #id))
     self:Debug("Sending data with size of", totalSize, "|| chunks:", #chunks)
     self:Debug("Sending will take", totalSize / BohemianConfig.cpsLimit, "seconds")
@@ -139,24 +145,14 @@ function E:BroadcastPayload(payloadType, channel, data)
     end)
 end
 
-
-function E:OnWhisper(event, target, ...)
-    if target ~= self:GetPlayerName(true) then
-        return
-    end
-    if self.events[event] then
-        self.events[event](self, ...)
-    end
-end
-
 function E:ProcessEvent(message, channel, sender)
     local data = { strsplit(E.EVENT_SEPARATOR, message) }
     if not string.find(sender, "-") then
         sender = sender.."-"..GetNormalizedRealmName()
     end
+    local event = table.remove(data,1)
     table.insert(data, sender)
     table.insert(data, channel)
-    local event = table.remove(data,1)
     return event, data
 end
 

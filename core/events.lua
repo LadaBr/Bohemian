@@ -73,7 +73,9 @@ function A:CHAT_MSG_ADDON(prefix, message, channel, sender)
     else
         event, args = E:ProcessEvent(message, channel, sender)
     end
-    E:OnEvent(event, unpack(args))
+    if event and args then
+        E:OnEvent(event, unpack(args))
+    end
 end
 
 function A:GUILD_ROSTER_UPDATE(...)
