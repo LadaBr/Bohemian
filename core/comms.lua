@@ -27,7 +27,7 @@ function E:SendPriorityEvent(channel, event, ...)
     if not payload then
         return
     end
-    self:Debug(event, "Sending event", channel, payload)
+    self:Debug(event, "Sending event", channel, payload, #payload)
     self:SendAddonPriorityMessage(payload, channel)
 end
 
@@ -147,6 +147,7 @@ end
 
 function E:ProcessEvent(message, channel, sender)
     local data = { strsplit(E.EVENT_SEPARATOR, message) }
+
     if not string.find(sender, "-") then
         sender = sender.."-"..GetNormalizedRealmName()
     end

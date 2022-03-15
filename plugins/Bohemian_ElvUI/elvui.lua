@@ -7,6 +7,7 @@
 local AddonName, E = ...
 E.MODULES_TO_LOAD = {}
 E.isElvUI = false
+
 local blacklist = {
     "Profession",
     "DKPLogFrameRow",
@@ -94,7 +95,8 @@ E.MODULES = {
         GuildCraftFrameClose:SetPoint("TOPRIGHT", 0 , 0)
         GuildCraftListFrameTitle:SetPoint("TOP", 0 , -5)
         GuildCraftFrameTitle:SetPoint("TOP", 0 , -5)
-        GuildCraftListFrameScrollFrame:SetPoint('TOPRIGHT', -30, -45)
+        GuildCraftListFrameScrollFrame:ClearAllPoints(true)
+        GuildCraftListFrameScrollFrame:SetPoint('TOPRIGHT', -30, -65)
         GuildCraftListFrameScrollFrameTop:Hide()
         GuildCraftListFrameScrollFrameBottom:Hide()
         GuildCraftListFrameScrollFrameMiddle:Hide()
@@ -103,12 +105,12 @@ E.MODULES = {
         --GuildCraftFrameScrollFrameMiddle:Hide()
         GuildCraftFrameScrollFrame:ClearAllPoints(true)
         GuildCraftFrameScrollFrame:SetPoint('TOPRIGHT', -40, -65)
-        _G["GuildCraftListFrameSkillFrame1"]:SetPoint("TOPLEFT", 22, -45)
+        _G["GuildCraftListFrameSkillFrame1"]:SetPoint("TOPLEFT", 22, -65)
         _G["GuildCraftFrameSkillFrame1"]:SetPoint("TOPLEFT", 17, -65)
         GuildCraftFrameSkillRankFrame:SetPoint("TOPLEFT", 8, -37)
         GuildCraftFrameSkillRankFrame:SetSize(336, 17)
         GuildCraftFramePlayerReagents:SetPoint("TOPLEFT", 80, -15)
-        GuildCraftListFrameOfflineMembers:SetPoint("TOPLEFT", 110, -20)
+        GuildCraftListFrameOfflineMembers:SetPoint("TOPLEFT", 110, -30)
         GuildCraftFrameScrollDetailFrame:SetPoint('TOPLEFT', 17, -214)
 
         ElvUI[1].Skins:HandleIcon(GuildCraftFrameScrollDetailFrameChildFrameSkillIconTexture, true)

@@ -607,3 +607,16 @@ function E:AddModuleControlItem(name, title)
     end
     E.lastModuleControlItem = item
 end
+
+function E:AddTooltip(frame, anchorType)
+    frame:SetScript("OnEnter", function(self)
+        if self.tooltip then
+            GameTooltip:SetOwner(self, anchorType);
+            GameTooltip:SetText(self.tooltip);
+            GameTooltip:Show();
+        end
+    end)
+    frame:SetScript("OnLeave", function()
+        GameTooltip:Hide();
+    end)
+end

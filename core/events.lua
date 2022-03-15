@@ -8,6 +8,7 @@ local _, E = ...
 local A = E.EVENTS
 E.IsInitialized = false
 E.QUEUE = {}
+E.INIT_DELAY = 1
 
 function A:ADDON_LOADED(name)
     if not self.IsInitialized then
@@ -43,7 +44,7 @@ function A:READY()
     else
         E:SendPriorityEvent("GUILD", "REQUIRED_MODULES_REQUEST")
     end
-    C_Timer.After(5, function()
+    C_Timer.After(E.INIT_DELAY, function()
         E:Init()
     end)
 end
@@ -89,9 +90,6 @@ function A:GUILD_ROSTER_UPDATE(...)
 end
 
 function A:GUILD_MEMBER_COUNT_CHANGED(offline, online)
-    E:Debug("GUILD_MEMBER_COUNT_CHANGED")
-    E:Debug(offline)
-    E:Debug(online)
     for player, _ in pairs(online) do
         E:SendEventTo(player.name, E.EVENT.ONLINE_CHECK)
         E:RequestVersionInfoFrom(player.name)

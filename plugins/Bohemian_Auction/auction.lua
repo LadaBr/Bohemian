@@ -152,7 +152,7 @@ function E:Bid(amount)
         return
     end
     if not Bohemian_AuctionConfig.addToCurrentAmount then
-        amount = amount == 0 and amount or amount - self.bidInfo.value
+        amount = amount == 0 and amount or amount - (self.bidInfo.value or self.currentItem.price)
     end
     if not self.isBiddingEnabled or amount == nil or (self.bidInfo.name and (not amount or amount == 0)) then
         return

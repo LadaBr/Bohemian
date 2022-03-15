@@ -11,11 +11,11 @@ E.AVAILABLE_MODULES = {
     "Bohemian_Auction",
     "Bohemian_Characters",
     "Bohemian_DKP",
-    "Bohemian_ElvUI",
     "Bohemian_Log",
     "Bohemian_Professions",
     "Bohemian_Raid",
     "Bohemian_Talents",
+    "Bohemian_ElvUI",
 }
 
 E.STRING = {
@@ -27,7 +27,7 @@ E.COMMAND = {
     DEBUG = 'debug'
 }
 
-E.EVENT_SEPARATOR = "\010"
+E.EVENT_SEPARATOR = "\011"
 E.COMPRESSED_SEPARATOR = ";"
 
 E.EVENT = {

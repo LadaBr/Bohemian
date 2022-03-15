@@ -41,3 +41,15 @@ function E:decodeBase64(data)
         return string.char(c)
     end))
 end
+
+function E:display_time(time, formatString)
+    local hours = floor(mod(time, 86400)/3600)
+    local minutes = floor(mod(time,3600)/60)
+    local seconds = floor(mod(time,60))
+    return format(formatString or "%02d:%02d:%02d",hours,minutes,seconds)
+end
+
+function round(num, numDecimalPlaces)
+    local mult = 10^(numDecimalPlaces or 0)
+    return math.floor(num * mult + 0.5) / mult
+end

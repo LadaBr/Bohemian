@@ -5,12 +5,61 @@
 ---
 local _, E = ...
 local A = E.EVENTS
+local C = E.CORE
+
+C:RegisterEvent("ZONE_CHANGED")
+C:RegisterEvent("READY_CHECK")
+C:RegisterEvent("READY_CHECK_FINISHED")
+C:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+C:RegisterEvent("UNIT_SPELLCAST_START")
+C:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
+C:RegisterEvent("UNIT_SPELLCAST_STOP")
+C:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+C:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
+C:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
+C:RegisterEvent("UNIT_AURA")
+C:RegisterEvent("UPDATE_INSTANCE_INFO")
+C:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+C:RegisterEvent("PLAYER_REGEN_DISABLED")
+C:RegisterEvent('CHAT_MSG_SYSTEM')
+
+function A:UNIT_SPELLCAST_START(unitTarget, castGUID, spellID)
+    if unitTarget == "player" then
+        E:UpdateGCD(spellID)
+    end
+end
+
+function A:UNIT_SPELLCAST_INTERRUPTED(...)
+    E:UpdateCastData(...)
+end
+
+function A:UNIT_SPELLCAST_STOP(...)
+    E:UpdateCastData(...)
+end
+
+function A:UNIT_SPELLCAST_SUCCEEDED(...)
+    E:UpdateCastData(...)
+end
+
+function A:UNIT_SPELLCAST_CHANNEL_START(...)
+    E:UpdateCastData(...)
+end
+
+function A:UNIT_SPELLCAST_CHANNEL_STOP(...)
+    E:UpdateCastData(...)
+end
+
+
+function A:UNIT_AURA(...)
+    E:UpdateAuraData(...)
+end
 
 function A:COMBAT_LOG_EVENT_UNFILTERED(...)
-    local timestamp, subevent, _, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, raidFlags, type = CombatLogGetCurrentEventInfo()
-    --print(...)
+    -- local arg1, subevent, arg3, arg4, sourceName, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14 = CombatLogGetCurrentEventInfo()
     --print(CombatLogGetCurrentEventInfo())
     --print(_, _, prefix, suffix, type)
+
+
     if not IsInRaid() or not UnitIsGroupLeader("player") then
         return
     end
@@ -45,9 +94,171 @@ end
 
 function A:GROUP_ROSTER_UPDATE()
     E:CacheRaid()
+    E:ShareInfo()
+    E:UpdateRaidInfoFrame()
 end
 
 function A:READY()
-    SetCVar("cameraDistanceMaxZoomFactor", 4.0)
-    SetCVar("nameplateMaxDistance", 41)
+    C:AddToUpdateQueue(function(id, elapsed)
+        if not InCombatLockdown() then
+            C:RemoveFromUpdateQueue(id)
+            SetCVar("cameraDistanceMaxZoomFactor", 4.0)
+            SetCVar("nameplateMaxDistance", 41)
+        end
+    end)
+    A:ZONE_CHANGED_NEW_AREA()
+
+end
+
+function A:ADDON_LOADED(name)
+    if name == "Blizzard_RaidUI" then
+        E:AddRaidButtonFrame()
+        E:AddRaidInfoFrame()
+        E.EVENTS:GROUP_ROSTER_UPDATE()
+        E:Hook()
+        E:Init()
+    end
+end
+
+function A:ZONE_CHANGED()
+    E:GetZone()
+end
+
+function A:READY_CHECK()
+    E:ShareInfoIfChanged()
+
+end
+
+function A:READY_CHECK_FINISHED()
+    if UnitIsGroupLeader("player") then
+        E:GetZone()
+        if E.zone == "Den of Mortal Delights" then
+            SendChatMessage("Ready check for Mother Shahraz", E:GetInstanceChannel())
+            for name, member in pairs(E.raidMembers) do
+                local resistInfo = E.resistInfo[name]
+                if resistInfo then
+                    if resistInfo[6] < 240 and member.role ~= "MAINTANK" then
+                        SendChatMessage(format("%s needs %d more Shadow Resistance!", strsplit("-", name), 240 - resistInfo[6]), E:GetInstanceChannel())
+                    end
+                end
+
+            end
+        end
+    end
+end
+
+function A:PLAYER_EQUIPMENT_CHANGED()
+    E:ShareInfoIfChanged()
+end
+
+function A:RESIST_INFO(armor, holy, fire, nature, frost, shadow, arcane, sender)
+    E.resistInfo[sender] = {tonumber(armor), tonumber(arcane), tonumber(fire), tonumber(nature), tonumber(frost), tonumber(shadow)}
+    E:UpdateTooltip()
+    E:UpdateRaidInfoFrame()
+end
+
+function A:UPDATE_INSTANCE_INFO()
+    E:UpdateSavedInstances()
+    if not E.loadedInstanceInfo then
+        E.loadedInstanceInfo = true
+        A:ZONE_CHANGED_NEW_AREA()
+    end
+    if E.updateSessionId then
+        E.updateSessionId = false
+        local instance = E:GetCurrentSavedInstance()
+        Bohemian_RaidStats[name][difficulty][E.currentSession.id] = nil
+        E.currentSession.id = instance.id
+        Bohemian_RaidStats[name][difficulty][instance.id] = E.currentSession
+    end
+    RaidFrameRaidInfoButton:Enable()
+end
+
+function A:PLAYER_ENTERING_WORLD(isLogin, isReload)
+    if not isLogin and not isReload then
+        return
+    end
+    E.firstLoad = true
+end
+
+function A:ZONE_CHANGED_NEW_AREA()
+    if not E.loadedInstanceInfo then
+        return
+    end
+    if IsInInstance() then
+        local name, type, difficulty = GetInstanceInfo()
+        if type == "raid" then
+            E:StartSession(name, difficulty)
+            if E.firstLoad then
+                E.firstLoad = false
+                local name = C:GetPlayerName(true)
+                local offlineTime = GetServerTime() - BohemianConfig.lastTimeOnline
+
+                if E:IsSessionInProgress() then
+                    E.currentSession.stats[name].timers.offline = E.currentSession.stats[name].timers.offline + offlineTime
+                    E.currentSession.stats[name].timers.session = E.currentSession.stats[name].timers.session + offlineTime
+                end
+            end
+        end
+    else
+        if UnitIsDeadOrGhost("player") then
+            E.waitUntilAlive = true
+        else
+            E:StopSession()
+        end
+    end
+end
+
+function A:PLAYER_REGEN_DISABLED()
+    if E.currentSession then
+        if not E.currentSession.firstCombat then
+            E.currentSession.firstCombat = GetServerTime()
+        end
+    end
+end
+
+
+function A:CHAT_MSG_SYSTEM(message)
+    if message == INSTANCE_SAVED then
+        if E.currentSession then
+            E.updateSessionId = true
+            RequestRaidInfo()
+        end
+    end
+    local _,_, name = string.find(message, "(.+) has been reset.$")
+
+    if name then
+        C:SendPriorityEvent(E:GetInstanceChannel(), "INSTANCE_RESET", name)
+    end
+end
+
+function A:INSTANCE_RESET(name)
+    if name then
+        if Bohemian_RaidStats[name] then
+            for diff, data in pairs(Bohemian_RaidStats[name]) do
+                for id, instance in pairs(data) do
+                    if instance.isTemp then
+                        Bohemian_RaidStats[name][diff][id] = nil
+                    end
+                end
+            end
+        end
+        if Bohemian_RaidConfig.activeSession and Bohemian_RaidConfig.activeSession.isTemp then
+            E:SetCurrentSession(nil)
+        end
+    end
+end
+
+function A:SESSION_INFO(data, sender)
+    if not E.currentSession then
+        return
+    end
+    local items = {strsplit(",", data)}
+    for _, item in ipairs(items) do
+        local type, value = strsplit("-", item)
+        if not E.currentSession.stats[sender] or not E.currentSession.stats[sender].timers  then
+            E.currentSession.stats[sender] = E:CreateStats()
+        end
+        E.currentSession.stats[sender].timers[type] = tonumber(value)
+    end
+    E:UpdateRaidInfoFrame()
 end
