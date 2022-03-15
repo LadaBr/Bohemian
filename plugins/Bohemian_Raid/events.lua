@@ -184,7 +184,7 @@ function A:ZONE_CHANGED_NEW_AREA()
     if not E.loadedInstanceInfo then
         return
     end
-    if IsInInstance() then
+    if IsInInstance() and IsInRaid(LE_PARTY_CATEGORY_HOME) and not IsInRaid(LE_PARTY_CATEGORY_INSTANCE) then
         local name, type, difficulty = GetInstanceInfo()
         if type == "raid" then
             E:StartSession(name, difficulty)

@@ -233,7 +233,7 @@ function E:Init()
             end
         end
 
-        if E.remaining <= 0 and not E.canShareInfo then
+        if E.remaining <= 0 and not E.canShareInfo or not E.currentSession then
             return
         end
         E.remaining = E.remaining - elapsed
