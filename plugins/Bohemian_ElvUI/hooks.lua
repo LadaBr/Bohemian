@@ -20,6 +20,21 @@ function E:HookLootFrame()
     end
 end
 
+function E:HookExistingBagFrames()
+    local module = C:GetModule("Bohemian_Auction")
+    if module then
+        for _, bagFrame in next, ElvUI[1].Bags.BagFrames do
+            for _, bagID in ipairs(bagFrame.BagIDs) do
+                for slotID = 1, GetContainerNumSlots(bagID) do
+                    local button = bagFrame.Bags[bagID] and bagFrame.Bags[bagID][slotID]
+                    if button then
+                        module:HookContainerItemFrame(button)
+                    end
+                end
+            end
+        end
+    end
+end
 
 function E:HookLootItemFrameElvUI(frame, index)
     frame:HookScript("OnClick", function()

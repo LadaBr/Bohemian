@@ -73,3 +73,7 @@ function E:GetPlayersVersion()
     end
     return data
 end
+
+function E:HasLatestVersion(fullName)
+    return self:GetAddonVersionNum(fullName) == self:GetAddonVersionNum(E:GetLatestVersion())
+end

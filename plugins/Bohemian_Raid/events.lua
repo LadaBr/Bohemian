@@ -112,11 +112,7 @@ end
 
 function A:ADDON_LOADED(name)
     if name == "Blizzard_RaidUI" then
-        E:AddRaidButtonFrame()
-        E:AddRaidInfoFrame()
-        E.EVENTS:GROUP_ROSTER_UPDATE()
-        E:Hook()
-        E:Init()
+        E:LoadAddon()
     end
 end
 
@@ -163,12 +159,16 @@ function A:UPDATE_INSTANCE_INFO()
         E.loadedInstanceInfo = true
         A:ZONE_CHANGED_NEW_AREA()
     end
-    if E.updateSessionId then
+    if E.currentSession and E.currentSession.isTemp or E.updateSessionId then
         E.updateSessionId = false
         local instance = E:GetCurrentSavedInstance()
-        Bohemian_RaidStats[name][difficulty][E.currentSession.id] = nil
-        E.currentSession.id = instance.id
-        Bohemian_RaidStats[name][difficulty][instance.id] = E.currentSession
+        if instance then
+            E.currentSession.isTemp = false
+            Bohemian_RaidStats[name][difficulty][E.currentSession.id] = nil
+            E.currentSession.id = instance.id
+            Bohemian_RaidStats[name][difficulty][instance.id] = E.currentSession
+        end
+
     end
     RaidFrameRaidInfoButton:Enable()
 end

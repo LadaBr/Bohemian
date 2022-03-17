@@ -64,7 +64,7 @@ function E:AddRaidButtonFrame()
 
     local prevResist
     for i = 1, 5 do
-        local resist = C:CreateFrame("Frame", "$parentResist" .. i, tooltipFrame, "MagicResistanceFrameTemplate")
+        local resist = CreateFrame("Frame", "$parentResist" .. i, tooltipFrame, "MagicResistanceFrameTemplate")
 
         if i == 1 then
             resist:SetPoint("TOPLEFT", 8, -10)
@@ -97,7 +97,7 @@ function E:AddRaidButtonFrame()
             texture:SetAllPoints(true)
             C:AddTooltip(classButton, "ANCHOR_TOP")
         end
-        local info = C:CreateFrame("Frame", "$parentInfo", button);
+        local info = CreateFrame("Frame", "$parentInfo", button);
         info:SetSize(12, 12)
         info:SetPoint("RIGHT", -2, 1)
         info:SetScript("OnEnter", function(self)
@@ -176,15 +176,15 @@ function E:ConditionalTimeFormat(value)
     local text = string.format("%ds", seconds)
 
     if minutes > 0 then
-        text = string.format("%dm", minutes)..text
+        text = string.format("%dm", minutes) .. text
     end
 
     if hours > 0 then
-        text = string.format("%dh", hours)..text
+        text = string.format("%dh", hours) .. text
     end
 
     if days > 0 then
-        text = string.format("%dd", days)..text
+        text = string.format("%dd", days) .. text
     end
     return text
 end
@@ -192,8 +192,8 @@ end
 function E:TimeToParts(value)
     local seconds = floor(mod(value, 60))
     local minutes = floor(mod(value, 3600) / 60)
-    local hours = floor(mod(value, 86400)/3600)
-    local days = floor(value/86400)
+    local hours = floor(mod(value, 86400) / 3600)
+    local days = floor(value / 86400)
     return seconds, minutes, hours, days
 end
 
@@ -244,17 +244,20 @@ function E:UpdateResistInfo(name)
         local resistInfo = name and E.resistInfo[name] or nil
         local value = resistInfo and resistInfo[i + 1] or nil
         local text = _G["RaidFrameTooltipResist" .. i .. "Value"]
-        if value ~= nil then
-            if value < 0 then
-                text:SetText(RED_FONT_COLOR_CODE .. value .. FONT_COLOR_CODE_CLOSE);
-            elseif value == 0 then
-                text:SetText(value);
+        if text then
+            if value ~= nil then
+                if value < 0 then
+                    text:SetText(RED_FONT_COLOR_CODE .. value .. FONT_COLOR_CODE_CLOSE);
+                elseif value == 0 then
+                    text:SetText(value);
+                else
+                    text:SetText(GREEN_FONT_COLOR_CODE .. value .. FONT_COLOR_CODE_CLOSE);
+                end
             else
-                text:SetText(GREEN_FONT_COLOR_CODE .. value .. FONT_COLOR_CODE_CLOSE);
+                text:SetText("-")
             end
-        else
-            text:SetText("-")
         end
+
     end
 end
 
@@ -305,7 +308,7 @@ function E:AddRaidInfoFrame()
     RaidInfoScrollFrame:SetWidth(RaidInfoScrollFrame:GetWidth() + width)
     RaidInfoDetailHeader:SetWidth(RaidInfoDetailHeader:GetWidth() + width)
     for i = 1, 10 do
-        _G["RaidInfoInstance"..i]:SetWidth(_G["RaidInfoInstance"..i]:GetWidth() + width)
+        _G["RaidInfoInstance" .. i]:SetWidth(_G["RaidInfoInstance" .. i]:GetWidth() + width)
     end
     C:SetFrameOffsetX(RaidInfoIDLabel, width)
     RaidInfoFrame:HookScript("OnShow", function()
@@ -365,7 +368,7 @@ function E:AddRaidInfoFrame()
         resistHeader:SetFrameLevel(100)
         resist:SetFrameLevel(1000)
         resist:SetSize(20, 18)
-        resistHeader.sort = "resist_" .. i
+        resistHeader.sort = "resist-" .. (i + 1)
         WhoFrameColumn_SetWidth(resistHeader, resist:GetWidth() + 12)
 
         local texture = resist:CreateTexture("$parentTexture", "BACKGROUND")
@@ -382,7 +385,7 @@ function E:AddRaidInfoFrame()
         h:SetFrameLevel(100)
         WhoFrameColumn_SetWidth(h, 65)
         h:SetText(timer.title)
-        h.sort = "timer_"..timer.index
+        h.sort = "timer-" .. timer.index
         prevTimer = h
         table.insert(columns, h)
     end
@@ -404,7 +407,7 @@ function E:AddRaidInfoFrame()
         else
             row:SetPoint("TOPLEFT", prevRow, "BOTTOMLEFT", 0, 0)
         end
-        row:SetSize(740, RAID_INFO_FRAME_ROW_HEIGHT)
+        row:SetSize(760, RAID_INFO_FRAME_ROW_HEIGHT)
         local prevCol
         for _, column in ipairs(columns) do
             local font = row:CreateFontString("$parentCol" .. _, "BORDER", "GameFontHighlightSmall")
@@ -496,7 +499,14 @@ function E:GetSortedPlayers(sortType, sortDir)
 
         local data = {}
         data.data = E.raidMembers[memberName]
-        data.resist = E.resistInfo[memberName] or {}
+        data.resist = E.resistInfo[memberName] or {
+            [1] = math.random(1, 20),
+            [2] = math.random(1, 20),
+            [3] = math.random(1, 20),
+            [4] = math.random(1, 20),
+            [5] = math.random(1, 20),
+            [6] = math.random(1, 20),
+        }
         if E.currentSession then
             data.stats = E.currentSession.stats[memberName] or {
                 timers = {}
@@ -521,7 +531,7 @@ function E:GetSortedPlayers(sortType, sortDir)
     if not sortType then
         return tmp
     end
-    local sortType, id = strsplit("_", sortType)
+    local sortType, id = strsplit("-", sortType)
     if sortType == "resist" then
         id = tonumber(id)
         table.sort(tmp, function(a, b)
@@ -552,11 +562,11 @@ end
 
 function E:GetResistColor(value)
     if value < 0 then
-        return RED_FONT_COLOR_CODE..value..FONT_COLOR_CODE_CLOSE
+        return RED_FONT_COLOR_CODE .. value .. FONT_COLOR_CODE_CLOSE
     elseif value == 0 then
         return value
     else
-        return GREEN_FONT_COLOR_CODE..value..FONT_COLOR_CODE_CLOSE
+        return GREEN_FONT_COLOR_CODE .. value .. FONT_COLOR_CODE_CLOSE
     end
 end
 

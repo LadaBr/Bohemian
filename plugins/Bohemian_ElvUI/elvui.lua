@@ -15,7 +15,8 @@ local blacklist = {
     "GuildCraftFrameSkillFrame",
     "GuildCraftFrameHighlight",
     "GuildCraftListFrameHighlight",
-    "ButtonAuctionMode"
+    "ButtonAuctionMode",
+    "HeaderResist",
 }
 local whitelist = {
     "BohemkaDKPInterfaceOptionsPanelModule"
@@ -29,6 +30,7 @@ local stripOnly = {
     "SkillReagent",
     "SkillRankFrameBorder",
     "GuildCraftListFrameSkillFrame",
+    "Timer",
 }
 
 E.TYPES = {
@@ -187,6 +189,7 @@ function E.EVENTS:ADDON_LOADED(name)
                 E:Initialize()
             end
         else
+            E:HookExistingBagFrames()
             E:Initialize()
         end
     end

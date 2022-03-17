@@ -34,27 +34,30 @@ E.lastSharedResist = {}
 E.raidMembersOffline = {}
 Bohemian_RaidStats = {}
 
-local function TryLoadAddOn(name)
-    local loaded, reason = LoadAddOn(name)
-    if not loaded then
-        if reason == "DISABLED" then
-            EnableAddOn(name, true) -- enable for all characters on the realm
-            LoadAddOn(name)
-        else
-            local failed_msg = format("%s - %s", reason, _G["ADDON_"..reason])
-            error(ADDON_LOAD_FAILED:format(name, failed_msg))
-        end
-    end
-end
 
 Bohemian.RegisterModule(AddonName, E, function()
     Bohemian_RaidConfig.announceParry = Bohemian_RaidConfig.announceParry == nil and true or Bohemian_RaidConfig.announceParry
     Bohemian_RaidConfig.announceMD = Bohemian_RaidConfig.announceMD == nil and true or Bohemian_RaidConfig.announceMD
     E:AddConfigFrames(E.CORE:CreateModuleInterfaceConfig("Raid"))
-    TryLoadAddOn("Blizzard_RaidUI")
+
+    if IsAddOnLoaded("Blizzard_RaidUI") then
+        E:LoadAddon()
+    end
 end)
 
 local C = E.CORE
+
+function E:LoadAddon()
+    if E.loaded then
+        return
+    end
+    E.loaded = true
+    E:AddRaidButtonFrame()
+    E:AddRaidInfoFrame()
+    E.EVENTS:GROUP_ROSTER_UPDATE()
+    E:Hook()
+    E:Init()
+end
 
 function E:CacheRaid()
     local members = GetNumGroupMembers();
@@ -165,6 +168,7 @@ end
 function E:Init()
     local update = 0.1
     local update2 = 1
+    local update3 = 30
     E.CORE:AddToUpdateQueue(function(id, elapsed)
         if E.GCD > 0 then
             E.GCD = E.GCD - elapsed
@@ -172,6 +176,7 @@ function E:Init()
         if not E.currentSession or not E.currentSession.firstCombat or E.currentSession.completed then
             return
         end
+
         local isDead = UnitIsDeadOrGhost("player")
         if E.waitUntilAlive and not isDead then
             E.waitUntilAlive = false
@@ -219,7 +224,13 @@ function E:Init()
                 end
             end
         end
-
+        if E.currentSession.isTemp then
+            update3 = update3 - elapsed
+            if update3 <= 0 then
+                update3 = 30
+                RequestRaidInfo()
+            end
+        end
     end)
 
     E.CORE:AddToUpdateQueue(function(id, elapsed)
