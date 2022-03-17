@@ -2,8 +2,7 @@
 ## Title: |cFF4068E0|| - |rRaid|r
 ## Author: Elerae-Golemagg
 ## Version: 1.0.0
-## SavedVariablesPerCharacter: Bohemian_RaidConfig
-## SavedVariables: Bohemian_RaidStats
+## SavedVariablesPerCharacter: Bohemian_RaidConfig, Bohemian_RaidStats
 ## Dependencies: Bohemian
 ## LoadOnDemand: 0
 

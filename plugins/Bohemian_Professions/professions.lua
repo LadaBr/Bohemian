@@ -275,13 +275,18 @@ function E:ShareAllCraftHistory(sendTo)
         local interval = 0.1
         local currentInterval = 0
         local t = time()
+        local wait = false
         --print("Sharing all crafts", sendTo)
         C:AddToUpdateQueue(function(id, elapsed)
-            --currentInterval = currentInterval + elapsed
-            --if currentInterval < interval then
-            --    return
-            --end
-            --currentInterval = 0
+            if wait then
+                currentInterval = currentInterval + elapsed
+                if currentInterval < interval then
+                    return
+                end
+                currentInterval = 0
+                wait = false
+            end
+
             if i > #allCrafts then
                 C:RemoveFromUpdateQueue(id)
                 table.insert(payloads, { C:PreparePayloadForSend(payload) })
@@ -300,9 +305,10 @@ function E:ShareAllCraftHistory(sendTo)
                 --print("Done")
                 return
             end
-            if i % 5 == 0 then
+            if i % 10 == 0 then
                 table.insert(payloads, { C:PreparePayloadForSend(payload) })
                 payload = {}
+                wait = true
             end
             local item = allCrafts[i]
             local playerName = item[1]

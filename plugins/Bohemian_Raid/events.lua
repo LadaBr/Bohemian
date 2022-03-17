@@ -164,9 +164,11 @@ function A:UPDATE_INSTANCE_INFO()
         local instance = E:GetCurrentSavedInstance()
         if instance then
             E.currentSession.isTemp = false
+            local name = instance[1]
+            local difficulty = instance[4]
             Bohemian_RaidStats[name][difficulty][E.currentSession.id] = nil
-            E.currentSession.id = instance.id
-            Bohemian_RaidStats[name][difficulty][instance.id] = E.currentSession
+            E.currentSession.id = instance[2]
+            Bohemian_RaidStats[name][difficulty][instance[2]] = E.currentSession
         end
 
     end

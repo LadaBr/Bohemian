@@ -340,12 +340,15 @@ function A:PLAYER_ROLL(name, roll, low, high)
     if not E.isRollMode or not E.currentItem or low ~= 1 or high ~= 100 then
         return
     end
+    if not string.find(name, "-") then
+        name = name.."-"..GetNormalizedRealmName()
+    end
     E.rollHistory[name] = roll
     if E.highestRoll < roll then
         E.highestRoll = roll
         E:SetHighestBidder(name, roll)
     end
-    if name == C:GetPlayerName(false) then
+    if name == C:GetPlayerName(true) then
         local font = E:GetFontFromRollValue(roll)
         E.frames.auction.totalDKPValue:SetText("You rolled")
         E.frames.auction.currentDKPValue:SetFontObject(font)

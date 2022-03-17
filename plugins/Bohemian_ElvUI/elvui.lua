@@ -50,6 +50,10 @@ E.TYPES = {
         if string.find(frame:GetName(), "Scroll") then
             return
         end
+        if string.find(frame:GetName(), "Dropdown") then
+            ElvUI[1].Skins:HandleDropDownBox(frame)
+            return
+        end
         frame:StripTextures()
         ElvUI[1].Skins:HandleFrame(frame, true)
     end,
@@ -183,21 +187,33 @@ E.MODULES = {
         ButtonAwardRaidDKP:SetHeight(ButtonAwardRaidDKP:GetHeight() + 2)
     end,
     Bohemian_Raid = function(module)
-        module:ResizeRaidInfoFrame(-RAID_INFO_FRAME_WIDTH)
-        RaidInfoFrameStats:SetPoint("TOPRIGHT", RaidInfoFrame, "TOPLEFT", -3, 0)
-        RaidInfoFrameStats:SetHeight(RaidInfoFrameStats:GetHeight() - 2)
-        RaidFrameSessionDuration:SetPoint("TOPLEFT", 8, -7)
-        RAID_INFO_FRAME_OFFSET_X = 3
-        local once = true
-        module.raidInfoFrame:HookScript("OnShow", function()
-            if once then
-                once = false
-                C:AddToUpdateQueue(function(id)
-                    C:RemoveFromUpdateQueue(id)
-                    module:FixRaidInfoFramePosition()
-                end)
+        local fn = function(module)
+            module:ResizeRaidInfoFrame(-RAID_INFO_FRAME_WIDTH)
+            RaidInfoFrameStats:SetPoint("TOPRIGHT", RaidInfoFrame, "TOPLEFT", -3, 0)
+            RaidInfoFrameStats:SetHeight(RaidInfoFrameStats:GetHeight() - 2)
+            RaidFrameSessionDuration:SetPoint("TOPLEFT", 8, -7)
+            RAID_INFO_FRAME_OFFSET_X = 3
+            local once = true
+            module.raidInfoFrame:HookScript("OnShow", function()
+                if once then
+                    once = false
+                    C:AddToUpdateQueue(function(id)
+                        C:RemoveFromUpdateQueue(id)
+                        module:FixRaidInfoFramePosition()
+                    end)
+                end
+            end)
+        end
+        if module.loaded then
+            fn()
+        else
+            local fn2 = module.LoadAddon
+            module.LoadAddon = function(module)
+                fn2(module)
+                fn(module)
             end
-        end)
+        end
+
     end,
 }
 

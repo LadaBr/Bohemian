@@ -191,11 +191,12 @@ function E:EndAuction(force)
     if not self.currentItemWinner then
         SendChatMessage(format("Auction was cancelled."), self:GetBroadcastChannel())
     else
+        local currentDKP = self:GetCurrentDKP(self.currentItemWinner.name)
+        local index = C.rosterIndex[self.currentItemWinner.name]
         if E.isRollMode then
-            SendChatMessage(format("%s rolled %d and won %s.", self.currentItemWinner.name, self.currentItemWinner.roll, itemLink), "GUILD")
+             C:GetModule("Bohemian_DKP"):SaveDKP(index, currentDKP, nil, "roll "..self.currentItemWinner.roll.." "..itemLink)
+            SendChatMessage(format("%s rolled %d and won %s.", strsplit("-", self.currentItemWinner.name), self.currentItemWinner.roll, itemLink), "GUILD")
         else
-            local currentDKP = self:GetCurrentDKP(self.currentItemWinner.name)
-            local index = C.rosterIndex[self.currentItemWinner.name]
             C:GetModule("Bohemian_DKP"):SaveDKP(index, currentDKP - self.currentItemWinner.bid, nil, itemLink)
             SendChatMessage(format("%s awarded to %s for %d DKP.", itemLink, strsplit("-", self.currentItemWinner.name), self.currentItemWinner.bid), "GUILD")
         end

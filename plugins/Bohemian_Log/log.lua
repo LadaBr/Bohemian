@@ -440,7 +440,10 @@ function E:FinishLogSync()
     E.initialized = true
     E:DetectChangesAll()
     E:ProcessQueue()
-    E:Debug("Log synchronization finished in "..(time() - E.longSyncStart).."s")
+    if E.longSyncStart then
+        E:Debug("Log synchronization finished in "..(time() - E.longSyncStart).."s")
+    end
+
     E:CleanUpLogs()
     C_Timer.After(10, function()
         E:StartAntiCheat()
@@ -471,15 +474,49 @@ function E:GetSortedLog(fullName, order)
             return a.timeSort > b.timeSort
         end
     }
-    local log = CurrentDKPLog.current.data[fullName]
+    if fullName then
+        local log = CurrentDKPLog.current.data[fullName]
 
-    if log then
-        for _, data in pairs(log) do
-            table.insert(sortedLog, data)
+        if log then
+            for _, data in pairs(log) do
+                table.insert(sortedLog, data)
+            end
         end
     end
     table.sort(sortedLog, sortFn[order])
     return sortedLog
+end
+
+function E:GetFullLog()
+    local log = {}
+    if not CurrentDKPLog.current then
+        return log
+    end
+    for name, logs in pairs(CurrentDKPLog.current.data) do
+        for _, data in pairs(logs) do
+            local id = data.time..data.reason
+            if not log[id] then
+                log[id] = {
+                    names = {},
+                    timeSort = data.timeSort,
+                    reason = data.reason,
+                    editor = data.editor,
+                    prev = data.prev,
+                    current = data.current,
+                    time = data.time,
+                }
+            end
+            log[id].names[#log[id].names + 1] = name
+        end
+    end
+    local tmp = {}
+    for _, item in pairs(log) do
+        tmp[#tmp + 1] = item
+    end
+    table.sort(tmp, function(a, b)
+        return a.timeSort > b.timeSort
+    end)
+    return tmp
 end
 
 function E:CheckForWipe(fullName, since)

@@ -287,8 +287,10 @@ function E:UpdateRaidFrame(i, data)
             classButtonTexture:SetTexCoord(unpack(coords))
             classButtonTexture:Show()
         end
+        _G["RaidGroupButton" .. i.."Info"]:Show()
     else
         classButtonTexture:Hide()
+        _G["RaidGroupButton" .. i.."Info"]:Hide()
     end
 end
 
@@ -471,10 +473,69 @@ function E:AddRaidInfoFrame()
         end)
     end)
 
+    local history = C:CreateFrame("Frame", "$parentHistoryDropdown", f, "UIDropDownMenuTemplate")
+    history:SetPoint("TOPLEFT", 6, -11)
+    UIDropDownMenu_SetWidth(history, 150)
+    history:SetFrameLevel(1000)
+    history.value = "Current"
+
+    local initMenu = function()
+        local selectedValue = UIDropDownMenu_GetSelectedValue(history);
+        local info = UIDropDownMenu_CreateInfo();
+
+        info.text = "Current"
+        info.func = function()
+            history:SetValue("Current")
+        end;
+        info.value = "Current"
+        if ( info.value == selectedValue ) then
+            info.checked = 1;
+        else
+            info.checked = nil;
+        end
+        UIDropDownMenu_AddButton(info);
+
+        local sessions = E:GetAllSessions()
+        table.sort(sessions, function(a, b) return a.created < b.created end)
+        for _, session in ipairs(sessions) do
+            info.text = session.name.." - "..date('%Y/%m/%d %H:%M:%S', session.created);
+            info.func = function(self)
+                history:SetValue(self.value)
+            end;
+            info.value = session
+            if ( info.value == selectedValue ) then
+                info.checked = 1;
+            else
+                info.checked = nil;
+            end
+            UIDropDownMenu_AddButton(info);
+        end
+
+    end
+    history.SetValue = function (self, value)
+        self.value = value
+        E.showedSession = value ~= "Current" and value
+        UIDropDownMenu_SetSelectedValue(self, value);
+        E:UpdateRaidInfoFrame()
+    end
+    UIDropDownMenu_Initialize(history, initMenu);
+    UIDropDownMenu_SetSelectedValue(history, history.value);
+end
+
+function E:GetAllSessions()
+    local tmp = {}
+    for _, instance in pairs(Bohemian_RaidStats) do
+        for _, difficulty in pairs(instance) do
+            for _, session in pairs(difficulty) do
+                tmp[#tmp + 1] = session
+            end
+        end
+    end
+    return tmp
 end
 
 function E:FormatValue(value, fullName)
-    local session = E:GetSessionDuration(fullName)
+    local session = E:GetSessionDuration(fullName) or E.showedSession and E.showedSession.stats and E.showedSession.stats[fullName] and E.showedSession.stats[fullName].timers.session
     return (value and session and session > 0) and string.format("%s", E:TimeToReadable(value)) or "-"
 end
 
@@ -490,9 +551,6 @@ function E:UpdateRaidInfoFrame(skipSort)
         E.raidInfoFrame:SetWidth(805)
     end
     E:FixRaidInfoFramePosition()
-    if not E.currentSession then
-        return
-    end
     if not skipSort then
         E:SortPlayers()
     end
@@ -503,24 +561,38 @@ function E:FixRaidInfoFramePosition()
     RaidInfoFrame:SetPoint("TOPLEFT", RaidFrame, "TOPRIGHT", E.raidInfoFrame:GetWidth() + RAID_INFO_FRAME_OFFSET_X, 0)
 end
 
+function E:GetSelectedSession()
+    return E.showedSession or E.currentSession
+end
+
 function E:GetSortedPlayers(sortType, sortDir)
     local tmp = {}
-    for i, memberName in ipairs(E.raidMembersIndex) do
-
-        local data = {}
-        data.data = E.raidMembers[memberName]
-        data.resist = E.resistInfo[memberName] or {}
-        if E.currentSession then
-            data.stats = E.currentSession.stats[memberName] or {
-                timers = {}
-            }
-        else
-            data.stats = {
-                timers = {}
-            }
+    if E.showedSession then
+        for memberName, stats in pairs(E.showedSession.stats) do
+            local data = {}
+            data.data = {name = strsplit("-", memberName), fullName = memberName }
+            data.resist = {}
+            data.stats = stats
+            tmp[#tmp + 1] = data
         end
-        tmp[#tmp + 1] = data
+    else
+        for i, memberName in ipairs(E.raidMembersIndex) do
+            local data = {}
+            data.data = E.raidMembers[memberName]
+            data.resist = E.resistInfo[memberName] or {}
+            if E.currentSession then
+                data.stats = E.currentSession.stats[memberName] or {
+                    timers = {}
+                }
+            else
+                data.stats = {
+                    timers = {}
+                }
+            end
+            tmp[#tmp + 1] = data
+        end
     end
+
     if sortType == "name" then
         table.sort(tmp, function(a, b)
             if sortDir == "ASC" then
@@ -574,15 +646,15 @@ function E:GetResistColor(value)
 end
 
 function E:UpdateRaidInfoRows()
-    local guildOffset = FauxScrollFrame_GetOffset(E.raidInfoFrame.scroll);
+    local offset = FauxScrollFrame_GetOffset(E.raidInfoFrame.scroll);
     for i = 1, RAID_INFO_ROWS do
-        local index = i + guildOffset
+        local index = i + offset
         local row = _G["RaidInfoRow" .. i]
         local member = E.sortedPlayers[index]
         if member then
             local memberName = member.data.fullName
             local name = _G["RaidInfoRow" .. i .. "Col1"]
-            name:SetText(C:AddClassColorToName(member.data.name))
+            name:SetText(C:AddClassColorToName(member.data.fullName))
             for j = 1, 5 do
                 local resistValue = member.resist[j + 1]
                 local resist = _G["RaidInfoRow" .. i .. "Col" .. (1 + j)]

@@ -32,6 +32,7 @@ E.currentResist = {}
 E.savedInstances = {}
 E.lastSharedResist = {}
 E.raidMembersOffline = {}
+E.showedSession = nil
 Bohemian_RaidStats = {}
 
 

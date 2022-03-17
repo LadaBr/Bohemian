@@ -644,7 +644,7 @@ function E:AddConfigFrames(f)
 
 
 
-    local auctionStartKeyBind = C:CreateFrame("Frame", "$parentAuctionKeyBind", f, "UIDropDownMenuTemplate")
+    local auctionStartKeyBind = C:CreateFrame("Frame", "$parentAuctionKeyBindDropdown", f, "UIDropDownMenuTemplate")
     auctionStartKeyBind:SetPoint("TOPLEFT", title, "BOTTOMLEFT", -17, -30)
     auctionStartKeyBind.value = Bohemian_AuctionConfig.startAuctionModifier
 

@@ -9,7 +9,7 @@ local C = E.CORE
 
 DKP_LOG_ROW_AMOUNT = 24
 DKP_LOG_ROW_HEIGHT = 15
-DKP_LOG_FRAME_WIDTH = 557
+DKP_LOG_FRAME_WIDTH = 657
 DKP_LOG_FRAME_HEIGHT = 410
 DKP_LOG_REASON_WIDTH = 160
 
@@ -106,6 +106,14 @@ StaticPopupDialogs["WIPE_DATA_PLAYER"] = {
     hideOnEscape = 1
 };
 
+function E:ToggleLogFrame()
+    if BohemkaDKPLogFrame:IsShown() then
+        BohemkaDKPLogFrame:Hide()
+    else
+        BohemkaDKPLogFrame:Show()
+    end
+end
+
 function E:CreateLogButton()
     local log = C:CreateFrame("Button", "ButtonLog", f, "UIPanelButtonTemplate")
     log:SetPoint("LEFT", ButtonAdd, "RIGHT", 0, 0)
@@ -115,11 +123,7 @@ function E:CreateLogButton()
     log:SetText("?")
     log:RegisterForClicks("AnyUp")
     log:SetScript("OnClick", function()
-        if BohemkaDKPLogFrame:IsShown() then
-            BohemkaDKPLogFrame:Hide()
-        else
-            BohemkaDKPLogFrame:Show()
-        end
+        E:ToggleLogFrame()
     end)
 
     ButtonLogText:SetPoint("BOTTOM", 0, 4)
@@ -140,15 +144,35 @@ end
 
 function E:CreateLogFrame()
     local logFrame = C:CreateFrame("Frame", "BohemkaDKPLogFrame", GuildMemberDetailFrame,  BackdropTemplateMixin and "BackdropTemplate" or nil)
-    logFrame:SetPoint("TOPLEFT", GuildMemberDetailFrame, "TOPRIGHT")
+    logFrame:SetPoint("TOPLEFT", GuildMemberDetailFrame, "TOPRIGHT", 0, 0)
     logFrame:SetSize(DKP_LOG_FRAME_WIDTH, DKP_LOG_FRAME_HEIGHT)
     logFrame:SetBackdrop(BACKDROP_DIALOG_32_32)
-
     local f2 = C:CreateFrame("BUTTON", "$parentClose", logFrame, "UIPanelCloseButton");
     f2:SetPoint("TOPRIGHT", logFrame, "TOPRIGHT", -4, -4)
 
+    GuildInfoFrame:SetScript("OnShow", function(self)
+        logFrame:ClearAllPoints(true)
+        logFrame:SetParent(GuildInfoFrame)
+        logFrame:SetPoint("TOPLEFT", GuildInfoFrame, "TOPRIGHT", 0, 0)
+        E:RefreshDKPLogAll()
+        logFrame:Show()
+    end)
+
+    GuildInfoCancelButton:SetScript("OnClick", function()
+        E:ToggleLogFrame()
+    end)
+
+    GuildInfoCancelButton:SetText("Log")
+
+    GuildInfoFrame:SetScript("OnHide", function(self)
+        logFrame:ClearAllPoints(true)
+        logFrame:SetParent(GuildMemberDetailFrame)
+        logFrame:SetPoint("TOPLEFT", GuildMemberDetailFrame, "TOPRIGHT", 0, 0)
+    end)
+
     local dateCol = self:CreateDKPLogHeader("Date", 125, "Date/Time", "CENTER", "TOPLEFT", logFrame, "TOPLEFT", 9, -11)
-    local net = self:CreateDKPLogHeader("Net", 60, "Net", "CENTER", "LEFT", dateCol, "RIGHT")
+    local name = self:CreateDKPLogHeader("Name", 100, "Name", "LEFT", "LEFT", dateCol, "RIGHT")
+    local net = self:CreateDKPLogHeader("Net", 60, "Net", "CENTER", "LEFT", name, "RIGHT")
     local delta = self:CreateDKPLogHeader("Delta", 70, "Delta", "CENTER", "LEFT", net, "RIGHT", 0, 0)
     local desc = self:CreateDKPLogHeader("Reason", DKP_LOG_REASON_WIDTH, "Reason", "LEFT", "LEFT", delta, "RIGHT")
     desc.text:SetPoint("LEFT", 10, 0)
@@ -161,7 +185,6 @@ function E:CreateLogFrame()
     wipe:SetFrameStrata("HIGH")
     wipe:SetScript("OnClick", function()
         local fullName = GetGuildRosterInfo(GetGuildRosterSelection());
-        --E:RequestWipeData(fullName)
         StaticPopupDialogs["WIPE_DATA_PLAYER"].text = "Do you want to wipe ALL data of "..C:AddClassColorToName(fullName).."?\n\nThis will NOT create a backup."
         local dialog = StaticPopup_Show("WIPE_DATA_PLAYER")
         dialog.data = fullName
@@ -196,8 +219,27 @@ function E:CreateLogFrame()
         dateFont:SetPoint("LEFT", 0, 0)
         dateFont:SetSize(dateCol:GetWidth(), DKP_LOG_ROW_HEIGHT)
 
+        local nameFrame = C:CreateFrame("Button", "$parentNameFrame", row)
+        nameFrame:SetScript("OnEnter", function(self)
+            if self.tooltip or self.itemLink then
+                GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, -24);
+                GameTooltip:SetText(self.tooltip);
+                GameTooltip:Show();
+            end
+        end)
+        nameFrame:SetScript("OnLeave", function()
+            GameTooltip:Hide();
+        end)
+        nameFrame:Hide()
+
+        local nameFont = row:CreateFontString("$parentName","ARTWORK", "GameFontHighlightSmall")
+        nameFont:SetPoint("LEFT", dateFont, "RIGHT", 0, 0)
+        nameFont:SetSize(name:GetWidth() - 3, DKP_LOG_ROW_HEIGHT)
+        nameFont:SetJustifyH("LEFT")
+        nameFrame:SetAllPoints(nameFont);
+
         local netFont = row:CreateFontString("$parentNet","ARTWORK", "GameFontHighlightSmall")
-        netFont:SetPoint("LEFT", dateFont, "RIGHT", 2, 0)
+        netFont:SetPoint("LEFT", nameFont, "RIGHT", 2, 0)
         netFont:SetSize(net:GetWidth() - 20, DKP_LOG_ROW_HEIGHT)
         netFont:SetJustifyH("RIGHT")
 
@@ -283,12 +325,24 @@ function E:ColorizeValue(value)
 end
 
 function E:RefreshDKPLog(fullName)
+    if not fullName then
+        return
+    end
     local sortedLog = self:GetSortedLog(fullName, "DESC")
     sortedLog = self:FillExternalEdit(sortedLog, fullName)
     self.sortedLog = sortedLog
+    self.multiLog = false
     FauxScrollFrame_Update(BohemkaDKPLogFrameScrollFrame, #sortedLog, DKP_LOG_ROW_AMOUNT, DKP_LOG_ROW_HEIGHT)
     self:UpdateDKPLog()
     E:DetectChanges(fullName, E:GetCurrentDKP(fullName))
+end
+
+function E:RefreshDKPLogAll()
+    local sortedLog = E:GetFullLog()
+    self.sortedLog = sortedLog
+    self.multiLog = true
+    FauxScrollFrame_Update(BohemkaDKPLogFrameScrollFrame, #sortedLog, DKP_LOG_ROW_AMOUNT, DKP_LOG_ROW_HEIGHT)
+    self:UpdateDKPLog()
 end
 
 function E:UpdateDetailFrame()
@@ -301,17 +355,65 @@ function E:UpdateDKPLog()
     local logOffset = FauxScrollFrame_GetOffset(BohemkaDKPLogFrameScrollFrame)
     local fullName = GetGuildRosterInfo(GetGuildRosterSelection());
     local sortedLog = self.sortedLog
+    if not sortedLog then
+        return
+    end
+    if self.multiLog then
+        BohemkaDKPLogFrame:SetWidth(DKP_LOG_FRAME_WIDTH)
+        BohemkaDKPLogFrameHeaderName:Show()
+        BohemkaDKPLogFrameHeaderNet:SetPoint("LEFT", BohemkaDKPLogFrameHeaderName, "RIGHT")
+    else
+        BohemkaDKPLogFrame:SetWidth(DKP_LOG_FRAME_WIDTH - 100)
+        BohemkaDKPLogFrameHeaderName:Hide()
+        BohemkaDKPLogFrameHeaderNet:SetPoint("LEFT", BohemkaDKPLogFrameHeaderDate, "RIGHT")
+    end
     for i=1, DKP_LOG_ROW_AMOUNT do
         local index = i + logOffset
         local row = _G["BohemkaDKPLogFrameRow"..i]
         local descFrame = _G["BohemkaDKPLogFrameRow"..i.."DescFrame"]
-        if sortedLog[index] then
+        local nameFrame = _G["BohemkaDKPLogFrameRow"..i.."NameFrame"]
+        local item = sortedLog[index]
+        if item then
             row:Show()
             local dateCol = _G["BohemkaDKPLogFrameRow"..i.."Date"]
+            local nameCol = _G["BohemkaDKPLogFrameRow"..i.."Name"]
+
             local net = _G["BohemkaDKPLogFrameRow"..i.."Net"]
             local deltaCol = _G["BohemkaDKPLogFrameRow"..i.."Delta"]
             local desc = _G["BohemkaDKPLogFrameRow"..i.."DescFrameDesc"]
             local owner = _G["BohemkaDKPLogFrameRow"..i.."Owner"]
+            if self.multiLog then
+                local tmp = {}
+                for _, name in ipairs(item.names) do
+                    tmp[#tmp + 1] = C:AddClassColorToName(name)
+                end
+                local tmp2 = {}
+                local tmp3 = {}
+                for i, data in ipairs(tmp) do
+                    if i % 5 == 0 then
+                        tmp3[#tmp3 + 1] = table.concat(tmp2, ", ")
+                        tmp2 = {}
+                    end
+                    tmp2[#tmp2 + 1] = data
+                end
+                tmp3[#tmp3 + 1] = table.concat(tmp2, ", ")
+                local txt = table.concat(tmp3, "\n")
+                txt = #item.names > 1 and "("..#item.names..") "..txt or txt
+                if #item.names > 1 then
+                    nameFrame.tooltip = txt
+                else
+                    nameFrame.tooltip = nil
+                end
+                nameCol:SetText(txt)
+                nameCol:Show()
+                nameFrame:Show()
+                net:SetPoint("LEFT", nameCol, "RIGHT", 5, 0)
+            else
+                net:SetPoint("LEFT", dateCol, "RIGHT", 2, 0)
+                nameFrame:Hide()
+                nameFrame.tooltip = nil
+                nameCol:Hide()
+            end
 
             local dateFormat
             if sortedLog[index].timeSort and sortedLog[index].timeSort > 1 and not sortedLog[index].external and not string.find(sortedLog[index].reason, 'Data restored from') then
@@ -341,6 +443,9 @@ function E:UpdateDKPLog()
             elseif reason:match('^killing of') then
                 local bossName = reason:match('^killing of (.+)')
                 reason = C:colorize("|TInterface\\TargetingFrame\\UI-RaidTargetingIcon_8:12:12:0:0|t "..bossName, C.COLOR.DARKRED)
+            elseif reason:match('^roll') then
+                local value, itemLink = reason:match("^roll (%d+) (.*)")
+                reason = "|TInterface\\Buttons\\UI-GroupLoot-Dice-Up:16:16:0:0|t "..value.." "..itemLink
             end
             local tooltip = reason
             if reason:match('\|Hitem:%d+:') then
@@ -372,8 +477,10 @@ function E:UpdateDKPLog()
             end
             descFrame.enableDropdown = isExternal
             descFrame:Show()
+            nameFrame:Show()
         else
             row:Hide()
+            nameFrame:Hide()
             descFrame:Hide()
         end
         descFrame.item = sortedLog[index]
@@ -415,7 +522,7 @@ function E:AddConfigFrames(f)
     backup:SetPoint("TOPLEFT", f, "TOPLEFT", 30, -26)
     backup:SetWidth(120)
     backup:SetText("Backups")
-    local backupDropdown = C:CreateFrame("Frame", "$parentDropdown", backup);
+    local backupDropdown = C:CreateFrame("Frame", "$parentButton", backup);
     backup:SetScript("OnClick", function()
         if UIDROPDOWNMENU_OPEN_MENU  == backupDropdown then
             E:UnloadDataForBackupDropdown()
@@ -541,3 +648,4 @@ function E:LoadDataForBackupDropdown()
     end
     self.backupDropdownData = dates
 end
+
