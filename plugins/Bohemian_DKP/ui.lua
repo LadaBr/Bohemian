@@ -684,3 +684,14 @@ function E:AddConfigFrames(f)
     end
 
 end
+
+function E:UpdateAwardDKPButton()
+    RaidFrameAllAssistCheckButton:ClearAllPoints(true)
+    if not IsInRaid() or not E:CanEditDKP() then
+        ButtonAwardRaidDKP:Hide()
+        RaidFrameAllAssistCheckButton:SetPoint(unpack(E.allAssistPoint))
+    else
+        ButtonAwardRaidDKP:Show()
+        RaidFrameAllAssistCheckButton:SetPoint("TOPRIGHT", -60, 0)
+    end
+end

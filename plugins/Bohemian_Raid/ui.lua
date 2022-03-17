@@ -6,6 +6,8 @@
 local _, E = ...
 local C = E.CORE
 
+RAID_INFO_FRAME_OFFSET_X = 0
+
 local timers = {
     { index = "active", name = "Active", title = "Active", order = 1 },
     { index = "regen", name = "Regen", title = "Regen", order = 2 },
@@ -292,6 +294,17 @@ end
 
 RAID_INFO_FRAME_ROW_HEIGHT = 14
 RAID_INFO_ROWS = 25
+RAID_INFO_FRAME_WIDTH = 60
+
+function E:ResizeRaidInfoFrame(width)
+    RaidInfoFrame:SetWidth(RaidInfoFrame:GetWidth() + width)
+    RaidInfoScrollFrame:SetWidth(RaidInfoScrollFrame:GetWidth() + width)
+    RaidInfoDetailHeader:SetWidth(RaidInfoDetailHeader:GetWidth() + width)
+    for i = 1, 10 do
+        _G["RaidInfoInstance" .. i]:SetWidth(_G["RaidInfoInstance" .. i]:GetWidth() + width)
+    end
+    C:SetFrameOffsetX(RaidInfoIDLabel, width)
+end
 
 function E:AddRaidInfoFrame()
     local f = C:CreateFrame("Frame", "$parentStats", RaidInfoFrame, BackdropTemplateMixin and "BackdropTemplate" or nil)
@@ -303,14 +316,7 @@ function E:AddRaidInfoFrame()
     --f:Hide()
     RaidInfoScrollFrameScrollBar:Hide()
     RaidInfoScrollFrameScrollBar:SetPoint("TOPLEFT", RaidInfoScrollFrame, "TOPRIGHT", 8, -3);
-    local width = 60
-    RaidInfoFrame:SetWidth(RaidInfoFrame:GetWidth() + width)
-    RaidInfoScrollFrame:SetWidth(RaidInfoScrollFrame:GetWidth() + width)
-    RaidInfoDetailHeader:SetWidth(RaidInfoDetailHeader:GetWidth() + width)
-    for i = 1, 10 do
-        _G["RaidInfoInstance" .. i]:SetWidth(_G["RaidInfoInstance" .. i]:GetWidth() + width)
-    end
-    C:SetFrameOffsetX(RaidInfoIDLabel, width)
+    E:ResizeRaidInfoFrame(RAID_INFO_FRAME_WIDTH)
     RaidInfoFrame:HookScript("OnShow", function()
         f:Show()
     end)
@@ -322,12 +328,12 @@ function E:AddRaidInfoFrame()
     end)
 
     f:SetPoint("TOPRIGHT", RaidInfoFrame, "TOPLEFT", 1, 0)
-
+    E:FixRaidInfoFramePosition()
     f:SetSize(805, 426)
     f:SetBackdrop(BACKDROP_DIALOG_32_32)
-
-    --local close = C:CreateFrame("BUTTON", "$parentClose", f, "UIPanelCloseButton");
-    --close:SetPoint("TOPRIGHT", f, "TOPRIGHT", -4, -4)
+    local font = RaidFrame:CreateFontString("$parentSessionDuration", "BORDER", "GameFontHighlightSmall")
+    font:SetPoint("TOPLEFT", 80, -6)
+    --font:SetText("00:00:00")
 
     local rock = f:CreateTexture(nil, "BACKGROUND")
     rock:SetPoint("TOPLEFT", f, 10, -11)
@@ -483,7 +489,7 @@ function E:UpdateRaidInfoFrame(skipSort)
     else
         E.raidInfoFrame:SetWidth(805)
     end
-    RaidInfoFrame:SetPoint("TOPLEFT", RaidFrame, "TOPRIGHT", E.raidInfoFrame:GetWidth(), 0)
+    E:FixRaidInfoFramePosition()
     if not E.currentSession then
         return
     end
@@ -493,20 +499,17 @@ function E:UpdateRaidInfoFrame(skipSort)
     E:UpdateRaidInfoRows()
 end
 
+function E:FixRaidInfoFramePosition()
+    RaidInfoFrame:SetPoint("TOPLEFT", RaidFrame, "TOPRIGHT", E.raidInfoFrame:GetWidth() + RAID_INFO_FRAME_OFFSET_X, 0)
+end
+
 function E:GetSortedPlayers(sortType, sortDir)
     local tmp = {}
     for i, memberName in ipairs(E.raidMembersIndex) do
 
         local data = {}
         data.data = E.raidMembers[memberName]
-        data.resist = E.resistInfo[memberName] or {
-            [1] = math.random(1, 20),
-            [2] = math.random(1, 20),
-            [3] = math.random(1, 20),
-            [4] = math.random(1, 20),
-            [5] = math.random(1, 20),
-            [6] = math.random(1, 20),
-        }
+        data.resist = E.resistInfo[memberName] or {}
         if E.currentSession then
             data.stats = E.currentSession.stats[memberName] or {
                 timers = {}

@@ -70,11 +70,7 @@ function A:CACHED_GUILD_DATA()
 end
 
 function A:GROUP_ROSTER_UPDATE()
-    if not IsInRaid() then
-        ButtonAwardRaidDKP:Hide()
-    else
-        ButtonAwardRaidDKP:Show()
-    end
+    E:UpdateAwardDKPButton()
 end
 
 function A:GUILD_ROSTER_UPDATE()

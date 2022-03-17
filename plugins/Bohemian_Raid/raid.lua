@@ -210,6 +210,7 @@ function E:Init()
         if update <= 0 then
             update = 0.1
             E:UpdateTimers()
+            RaidFrameSessionDuration:SetText(C:display_time(E.timers.session))
         end
 
         update2 = update2 - elapsed

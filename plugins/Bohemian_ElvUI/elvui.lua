@@ -170,6 +170,35 @@ E.MODULES = {
     Bohemian_Log = function()
         BohemkaDKPLogFrame:SetPoint("TOPLEFT", GuildMemberDetailFrame, "TOPRIGHT", 6, 1)
     end,
+    Bohemian_DKP = function(module)
+        local fn = module.UpdateAwardDKPButton
+        module.UpdateAwardDKPButton = function()
+            fn(module)
+            RaidFrameAllAssistCheckButton:ClearAllPoints(true)
+            RaidFrameAllAssistCheckButton:SetPoint("TOPLEFT", 1, -24)
+        end
+        module:UpdateAwardDKPButton()
+        ButtonAwardRaidDKP:ClearAllPoints(true)
+        ButtonAwardRaidDKP:SetPoint("RIGHT", RaidFrameReadyCheckButton, "LEFT", -2, 0)
+        ButtonAwardRaidDKP:SetHeight(ButtonAwardRaidDKP:GetHeight() + 2)
+    end,
+    Bohemian_Raid = function(module)
+        module:ResizeRaidInfoFrame(-RAID_INFO_FRAME_WIDTH)
+        RaidInfoFrameStats:SetPoint("TOPRIGHT", RaidInfoFrame, "TOPLEFT", -3, 0)
+        RaidInfoFrameStats:SetHeight(RaidInfoFrameStats:GetHeight() - 2)
+        RaidFrameSessionDuration:SetPoint("TOPLEFT", 8, -7)
+        RAID_INFO_FRAME_OFFSET_X = 3
+        local once = true
+        module.raidInfoFrame:HookScript("OnShow", function()
+            if once then
+                once = false
+                C:AddToUpdateQueue(function(id)
+                    C:RemoveFromUpdateQueue(id)
+                    module:FixRaidInfoFramePosition()
+                end)
+            end
+        end)
+    end,
 }
 
 
@@ -212,7 +241,7 @@ end
 
 function E:ProcessModule(module)
     if E.MODULES[module.NAME] then
-        E.MODULES[module.NAME]()
+        E.MODULES[module.NAME](module)
     end
 end
 
