@@ -31,6 +31,7 @@ local stripOnly = {
     "SkillRankFrameBorder",
     "GuildCraftListFrameSkillFrame",
     "Timer",
+    "Version"
 }
 
 E.TYPES = {

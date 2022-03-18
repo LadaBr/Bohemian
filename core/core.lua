@@ -34,6 +34,7 @@ function E:Load()
     E:UpdateLFGFrame()
     E:AddGuildColumnsToExistingHeaders()
     E:AdjustGuildFrameControlButtons()
+    E:AddVersionColumn()
     E:CreateInterfaceConfig()
     C_Timer.After(20, function()
         E.stopIgnoringOffline = true

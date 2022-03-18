@@ -99,7 +99,7 @@ end
 
 function E:CheckSuspects()
     for name, dkp in pairs(E.suspects) do
-        E:DetectChanges(name, dkp)
+        E:DetectChanges(name, E:GetCurrentDKP(name) or dkp)
         if not self.cheaters[name] then
             E.suspects[name] = nil
         end
@@ -438,14 +438,14 @@ end
 
 function E:FinishLogSync()
     E.initialized = true
-    E:DetectChangesAll()
     E:ProcessQueue()
     if E.longSyncStart then
         E:Debug("Log synchronization finished in "..(time() - E.longSyncStart).."s")
     end
 
     E:CleanUpLogs()
-    C_Timer.After(10, function()
+    C_Timer.After(1, function()
+        E:DetectChangesAll()
         E:StartAntiCheat()
     end)
 end

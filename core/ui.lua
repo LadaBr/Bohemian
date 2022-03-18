@@ -144,6 +144,34 @@ function E:AddGuildColumnsToHeader(header, buttonPrefix, buttonName)
     end
 end
 
+function E:AddVersionColumn()
+    for i = 1, GUILDMEMBERS_TO_DISPLAY, 1 do
+        local button = _G["GuildFrameGuildStatusButton"..i]
+        local online = _G["GuildFrameGuildStatusButton" .. i .. "Online"]
+        local version = E:CreateFrame("Frame", "GuildFrameGuildStatusButton"..i.."Version", button)
+        version:SetPoint("LEFT")
+        version:SetSize(5, button:GetHeight())
+        version:SetPoint("LEFT", online, "RIGHT", -version:GetWidth(), 0)
+        local font = version:CreateFontString("$parentText", "ARTWORK", "GameFontNormal")
+        font:SetText("·")
+        font:SetFont("Fonts\\FRIZQT__.TTF", 20)
+        font:SetPoint("CENTER", version, 0, 0)
+
+        version:SetScript("OnEnter", function(self)
+            if self.tooltip then
+                GameTooltip:SetOwner(self, "ANCHOR_TOP", 0, 0);
+                GameTooltip:SetText(self.tooltip);
+                GameTooltip:Show();
+            end
+        end)
+        version:SetScript("OnLeave", function()
+            GameTooltip:Hide();
+        end)
+        version:Hide()
+    end
+
+end
+
 function E:SetGuildStatusColumnWidth()
     for header, buttonName in pairs(E.GuildHeaderColumns) do
         for i = 1, GUILDMEMBERS_TO_DISPLAY, 1 do

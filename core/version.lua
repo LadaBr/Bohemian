@@ -61,14 +61,14 @@ function E:GetPlayersVersion()
         old = {},
         missing = {},
     }
-    for player, data in pairs(E.guildRoster) do
+    for player, _ in pairs(E.guildRoster) do
         local version = BohemianConfig.versions[player]
         if not version then
-            data.missing = player
+            data.missing[player] = true
         elseif self:GetAddonVersionNum(version) < latestNum then
-            data.old = player
+            data.old[player] = version
         else
-            data.current = player
+            data.current[player] = version
         end
     end
     return data
@@ -76,4 +76,8 @@ end
 
 function E:HasLatestVersion(fullName)
     return self:GetAddonVersionNum(fullName) == self:GetAddonVersionNum(E:GetLatestVersion())
+end
+
+function E:UpdateVersions()
+    self.guildRosterVersions = E:GetPlayersVersion()
 end

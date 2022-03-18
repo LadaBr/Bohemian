@@ -22,6 +22,7 @@ Bohemian.RegisterModule(AddonName, E, function()
     E:AddLFGFrameButton()
     E:CreateGuildCraftListFrame()
     E:AdjustDetailFrame()
+    E:RenderColumns()
     E:Hook()
 end)
 

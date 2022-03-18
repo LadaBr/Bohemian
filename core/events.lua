@@ -125,6 +125,9 @@ function A:VERSION_INFO(version, sender)
     BohemianConfig.versions[sender] = version
     E:Debug(sender, "has version", version)
     E:VersionCheck()
+    if E.syncDone then
+        E:UpdateVersions()
+    end
 end
 
 function A:STREAM_DATA(message, channel, sender)
@@ -222,6 +225,10 @@ end
 function A:SYNC_DONE()
     E:RequestVersionInfo()
     E:ShareVersionInfo()
+    C_Timer.After(5, function()
+        E:UpdateVersions()
+    end)
+    E.syncDone = true
 end
 
 function A:MODULE_LOADED(module)
@@ -260,4 +267,29 @@ function A:REQUIRED_MODULES(modules, lastUpdate, sender)
     end
     E:UpdateModuleControlItems()
     E:Init()
+end
+
+function A:UPDATE_GUILD_MEMBER(row, _, _, fullName)
+    if not E.guildRosterVersions then
+        return
+    end
+    local version = _G["GuildFrameGuildStatusButton" .. row .. "Version"]
+    local versionText = _G["GuildFrameGuildStatusButton" .. row .. "VersionText"]
+    if E.guildRosterVersions.missing[fullName] then
+        versionText:SetTextColor(1.0, 0.0, 0.0)
+        version:Show()
+        version.tooltip = nil
+    elseif E.guildRosterVersions.old[fullName] then
+        versionText:SetTextColor(1, 0.82, 0)
+        version:Show()
+        version.tooltip = E.guildRosterVersions.old[fullName]
+    elseif E.guildRosterVersions.current[fullName] then
+        versionText:SetTextColor(0, 1, 0)
+        version:Show()
+        version.tooltip = E.guildRosterVersions.current[fullName]
+    else
+        version:Hide()
+        version.tooltip = nil
+    end
+
 end
