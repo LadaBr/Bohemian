@@ -276,11 +276,17 @@ function A:UPDATE_GUILD_MEMBER(row, _, _, fullName)
     local version = _G["GuildFrameGuildStatusButton" .. row .. "Version"]
     local versionText = _G["GuildFrameGuildStatusButton" .. row .. "VersionText"]
     if E.guildRosterVersions.missing[fullName] then
-        versionText:SetTextColor(1.0, 0.0, 0.0)
+        versionText:SetTextColor(0.5, 0.5, 0.5)
         version:Show()
         version.tooltip = nil
     elseif E.guildRosterVersions.old[fullName] then
-        versionText:SetTextColor(1, 0.82, 0)
+        local majorDiff = E.guildRosterVersions.old[fullName]:sub(1, 1) ~= E.latestVersion:sub(1,1)
+        if majorDiff then
+            versionText:SetTextColor(1, 0, 0)
+        else
+            versionText:SetTextColor(1, 0.82, 0)
+        end
+
         version:Show()
         version.tooltip = E.guildRosterVersions.old[fullName]
     elseif E.guildRosterVersions.current[fullName] then

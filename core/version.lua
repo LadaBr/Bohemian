@@ -51,6 +51,7 @@ function E:VersionCheck()
         self:Print(self:colorize(self.STRING.OUT_OF_DATE, self.COLOR.WHITE)..self:colorize(self:GetAddonVersion(), self.COLOR.RED).." -> ".. self:colorize(latest, self.COLOR.GREEN))
         self.lastVersionAnnounce = GetServerTime()
     end
+    E.latestVersion = latest
 end
 
 function E:GetPlayersVersion()
