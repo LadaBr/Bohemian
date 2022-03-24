@@ -57,3 +57,10 @@ end
 function A:UPDATE_GUILD_MEMBER(row, index)
     E:UpdateTalentsInfo(index, row)
 end
+
+function A:ADDON_LOADED(name)
+    --if name == "Blizzard_InspectUI" then
+    --    print("LOADED INSPECT")
+    --    InspectFrame:Show()
+    --end
+end

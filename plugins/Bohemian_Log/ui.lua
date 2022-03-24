@@ -325,7 +325,7 @@ function E:ColorizeValue(value)
 end
 
 function E:RefreshDKPLog(fullName)
-    if not fullName then
+    if not fullName or (GuildInfoFrame:IsShown() and BohemkaDKPLogFrame:IsShown()) then
         return
     end
     local sortedLog = self:GetSortedLog(fullName, "DESC")
@@ -348,7 +348,6 @@ end
 function E:UpdateDetailFrame()
     local fullName = GetGuildRosterInfo(GetGuildRosterSelection());
     E:RefreshDKPLog(fullName)
-    E:UpdateDKPLog()
 end
 
 function E:UpdateDKPLog()

@@ -53,3 +53,16 @@ function round(num, numDecimalPlaces)
     local mult = 10^(numDecimalPlaces or 0)
     return math.floor(num * mult + 0.5) / mult
 end
+
+function TryLoadAddOn(name)
+    local loaded, reason = LoadAddOn(name)
+    if not loaded then
+        if reason == "DISABLED" then
+            EnableAddOn(name, true) -- enable for all characters on the realm
+            LoadAddOn(name)
+        else
+            local failed_msg = format("%s - %s", reason, _G["ADDON_"..reason])
+            error(ADDON_LOAD_FAILED:format(name, failed_msg))
+        end
+    end
+end

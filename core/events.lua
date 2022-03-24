@@ -34,6 +34,14 @@ function A:ADDON_LOADED(name)
             end
         end
     end
+
+    if name == "Details" then
+        local fn = _G._detalhes.network.TBCData
+        _G._detalhes.network.TBCData = function(self, ...)
+            pcall(fn, self, ...)
+        end
+    end
+
 end
 
 function A:READY()

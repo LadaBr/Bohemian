@@ -8,6 +8,7 @@ local AddonName, E = ...
 
 Bohemian.RegisterModule(AddonName, E, function()
     E:CreateGuildFrameTalentsButtons()
+    --InspectFrame_LoadUI()
 end)
 local C = E.CORE
 

@@ -13,7 +13,9 @@ E.INTERVAL = 2
 E.SESSION_INTERVAL = 10
 E.remainingSession = E.SESSION_INTERVAL
 E.remaining = 0
+E.remainingRequest = 0
 E.canShareInfo = false
+E.canRequestRaidInfo = true
 E.isCasting = false
 E.timers = {
     idle = 0,
@@ -169,7 +171,7 @@ end
 function E:Init()
     local update = 0.1
     local update2 = 1
-    local update3 = 30
+    local update3 = 5
     E.CORE:AddToUpdateQueue(function(id, elapsed)
         if E.GCD > 0 then
             E.GCD = E.GCD - elapsed
@@ -229,7 +231,7 @@ function E:Init()
         if E.currentSession.isTemp then
             update3 = update3 - elapsed
             if update3 <= 0 then
-                update3 = 30
+                update3 = 60
                 RequestRaidInfo()
             end
         end
@@ -259,6 +261,28 @@ function E:Init()
             E:ShareAllInfo()
         end
     end)
+
+    E.CORE:AddToUpdateQueue(function(id, elapsed)
+        if E.remainingRequest <= 0 and not E.canRequestRaidInfo or not E.currentSession then
+            return
+        end
+        E.remainingRequest = E.remainingRequest - elapsed
+        if not E.canRequestRaidInfo then
+            return
+        end
+        if E.remainingRequest <= 0 then
+            E.canRequestRaidInfo = false
+            E.remainingRequest = 20
+            RequestRaidInfo()
+        end
+    end)
+end
+
+function E:RequestRaidInfo()
+    if E.canRequestRaidInfo then
+        E.remainingRequest = 20
+    end
+    E.canRequestRaidInfo = true
 end
 
 function E:CreateStats()

@@ -260,6 +260,9 @@ function E:ShareCraftHistory()
 end
 
 function E:ShareAllCraftHistory(sendTo)
+    if E.sharing then
+        return
+    end
     local crafts = E:GetGuildCrafts()
     if crafts then
         local i = 1
@@ -277,6 +280,7 @@ function E:ShareAllCraftHistory(sendTo)
         local currentInterval = 0
         local t = time()
         local wait = false
+        E.sharing = true
         --print("Sharing all crafts", sendTo)
         C:AddToUpdateQueue(function(id, elapsed)
             if wait then
@@ -303,6 +307,7 @@ function E:ShareAllCraftHistory(sendTo)
                         end)
                     end
                 end
+                E.sharing = false
                 --print("Done")
                 return
             end

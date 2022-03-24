@@ -90,6 +90,11 @@ function A:COMBAT_LOG_EVENT_UNFILTERED(...)
             end
         end
     end
+
+    local _, eventType, _, _, _, _, _, _, destName, _, _, recapID, _ = CombatLogGetCurrentEventInfo()
+    if eventType == "UNIT_DIED" or eventType == "UNIT_DESTROYED" or eventType == "UNIT_DISSIPATES" then
+        E:RequestRaidInfo()
+    end
 end
 
 function A:GROUP_ROSTER_UPDATE()

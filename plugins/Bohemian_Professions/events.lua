@@ -133,10 +133,14 @@ function A:SYNC_DONE()
     C_Timer.After(5, function()
         local players = C:ProcessPlayersForSync(E.onlineSince)
         E.onlineSince = {}
-        for _, player in ipairs(players) do
-            -- TODO DATE
-            C:SendEventTo(player.name, "CRAFT_HISTORY_REQUEST")
+        table.sort(players, function (a, b) return a.onlineSince < b.onlineSince end)
+        if #players > 0 then
+            C:SendEventTo(players[1].name, "CRAFT_HISTORY_REQUEST")
         end
+        --for _, player in ipairs(players) do
+        --    -- TODO DATE
+        --    C:SendEventTo(player.name, "CRAFT_HISTORY_REQUEST")
+        --end
     end)
 
 end
@@ -145,13 +149,13 @@ function A:CRAFT_HISTORY_CHECK(sender)
     if sender == C:GetPlayerName(true) then
         return
     end
-    if not IsInInstance() then
+    if not IsInInstance() and not E.sharing then
         C:SendEventTo(sender, "CRAFT_HISTORY_CHECK_RESPONSE", C.onlineSince)
     end
 end
 
 function A:CRAFT_HISTORY_CHECK_RESPONSE(since, sender)
-    E.onlineSince[sender] = { onlineSince = tonumber(since) }
+    E.onlineSince[sender] = { onlineSince = tonumber(since), name = sender }
 end
 
 --function A:PAYLOAD_PROCESSED(type, _, sender)
