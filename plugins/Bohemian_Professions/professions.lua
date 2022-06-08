@@ -97,8 +97,9 @@ function E:RequestProfessionInfoFrom(player)
     C:SendEventTo(player, self.EVENT.PROFESSION_INFO_REQUEST)
 end
 
-
-
+function E:CanSync()
+    return not IsInInstance() and not IsActiveBattlefieldArena() and not E.sharing
+end
 
 E.updateQueue = {}
 

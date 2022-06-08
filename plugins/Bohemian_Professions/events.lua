@@ -19,11 +19,15 @@ function A:CHAT_MSG_SKILL()
 end
 
 function A:READY()
-    E:RequestProfessionInfo()
+    if E:CanSync() then
+        E:RequestProfessionInfo()
+    end
 end
 
 function A:PROFESSION_INFO_REQUEST(sender)
-    E:ShareProfessions(sender)
+    if E:CanSync() then
+        E:ShareProfessions(sender)
+    end
 end
 
 function A:CRAFT(profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, id, minMade, maxMade, sender)
@@ -116,13 +120,18 @@ function A:UPDATE_GUILD_MEMBER(i, _, numMembers, fullName)
 end
 
 function A:GUILD_MEMBER_COUNT_CHANGED(_, online)
+    if not E:CanSync() then
+        return
+    end
     for player, _ in pairs(online) do
         E:RequestProfessionInfoFrom(player)
     end
 end
 
+
+
 function A:CRAFT_HISTORY_REQUEST(sender)
-    if not IsInInstance() then
+    if E:CanSync() then
         E:ShareAllCraftHistory(sender)
     end
 end
@@ -149,7 +158,7 @@ function A:CRAFT_HISTORY_CHECK(sender)
     if sender == C:GetPlayerName(true) then
         return
     end
-    if not IsInInstance() and not E.sharing then
+    if E:CanSync() then
         C:SendEventTo(sender, "CRAFT_HISTORY_CHECK_RESPONSE", C.onlineSince)
     end
 end

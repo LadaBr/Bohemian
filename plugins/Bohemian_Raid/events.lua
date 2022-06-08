@@ -22,6 +22,7 @@ C:RegisterEvent("UPDATE_INSTANCE_INFO")
 C:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 C:RegisterEvent("PLAYER_REGEN_DISABLED")
 C:RegisterEvent('CHAT_MSG_SYSTEM')
+C:RegisterEvent('ENCOUNTER_END')
 
 function A:UNIT_SPELLCAST_START(unitTarget, castGUID, spellID)
     if unitTarget == "player" then
@@ -91,16 +92,20 @@ function A:COMBAT_LOG_EVENT_UNFILTERED(...)
         end
     end
 
-    local _, eventType, _, _, _, _, _, _, destName, _, _, recapID, _ = CombatLogGetCurrentEventInfo()
-    if eventType == "UNIT_DIED" or eventType == "UNIT_DESTROYED" or eventType == "UNIT_DISSIPATES" then
-        E:RequestRaidInfo()
-    end
+    --local _, eventType, _, _, _, _, _, _, destName, _, _, recapID, _ = CombatLogGetCurrentEventInfo()
+    --if eventType == "UNIT_DIED" or eventType == "UNIT_DESTROYED" or eventType == "UNIT_DISSIPATES" then
+    --    E:RequestRaidInfo()
+    --end
 end
 
 function A:GROUP_ROSTER_UPDATE()
     E:CacheRaid()
     E:ShareInfo()
     E:UpdateRaidInfoFrame()
+end
+
+function A:ENCOUNTER_END()
+    E:RequestRaidInfo()
 end
 
 function A:READY()
