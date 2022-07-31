@@ -184,76 +184,76 @@ end
 
 function A:CHAT_MSG_GUILD(message)
     local guildName = C:GetGuildName()
-    if C:GetPlayerName(true) == "Elerae-Golemagg" then
-        local patterns = {
-            "umi.*%[(.+)%]",
-            "umí.*%[(.+)%]",
-            "umi.* (%a+).*$",
-            "umí.* (%a+).*$",
-        }
-        for _, pattern in ipairs(patterns) do
-            local itemName = string.match(message, pattern)
-            if itemName then
-                local players = {}
-                local playersOnline = {}
-                for playerName, _ in pairs(E:FilterCraftPlayers(itemName)) do
-                    if not C:IsPlayerOnline(playerName) then
-                        players[#players + 1] = strsplit("-", playerName)
-                    else
-                        playersOnline[#playersOnline + 1] = strsplit("-", playerName)
-                    end
-                end
-                if #players + #playersOnline > 0 then
-                    local msg = "Joo."
-                    if #playersOnline == 0 then
-                        msg = msg.." Bohužel nikdo z nich není online."
-                    else
-                        msg = msg.." Z těch online třeba "..table.concat(table.slice(playersOnline, 1, 5), ", ").."."
-                    end
-
-                    if #players > 0 then
-                        if #playersOnline == 0 then
-                            msg = msg.." Z těch offline třeba "..table.concat(table.slice(players, 1, 5), ", ").."."
-                        else
-                            msg = msg.." Jinak " .. table.concat(table.slice(players, 1, 5),", ") .. "."
-                        end
-                    end
-
-                    SendChatMessage(msg, "GUILD")
-                end
-                return
-            end
-        end
-        if string.find(strlower(message), "kdo je aos") then
-            SendChatMessage("Je to Borec!", "GUILD")
-        end
-        if string.find(strlower(message), "kdo je ixide") then
-            SendChatMessage("Marek Sajrajt", "GUILD")
-        end
-        if strlower(message) == "!hack" then
-            local tmp = {
-                [3] = "Spouštím hackovací sekvenci...",
-                [7] = "Detekuji OS...",
-                [9] = "Detekováno: Windows",
-                [10] = "Zahajuji přenos kódu mimo prostředí Wow.exe",
-                [15] = "Přenos úspěšně dokončen.",
-                [16] = "Procházím systémové soubory...",
-                [26] = "Systémové klíče objeveny!",
-                [26] = "Přístup odepřen.",
-                [27] = "Opakuji...",
-                [31] = "Přístup odepřen.",
-                [32] = "Opakuji...",
-                [46] = "Přístup povolen.",
-                [48] = "Spouštím proces miner.exe",
-            }
-            for time, text in pairs(tmp) do
-                C_Timer.After(time, function()
-                    SendChatMessage(text, "GUILD")
-                end)
-            end
-        end
-        if string.find(strlower(message), "kdo je niarkas") then
-            SendChatMessage("Týpek, co neuměl točit, tak šel radši tankovat. KEKW", "GUILD")
-        end
-    end
+    --if C:GetPlayerName(true) == "Elerae-Golemagg" then
+    --    local patterns = {
+    --        "umi.*%[(.+)%]",
+    --        "umí.*%[(.+)%]",
+    --        "umi.* (%a+).*$",
+    --        "umí.* (%a+).*$",
+    --    }
+    --    for _, pattern in ipairs(patterns) do
+    --        local itemName = string.match(message, pattern)
+    --        if itemName then
+    --            local players = {}
+    --            local playersOnline = {}
+    --            for playerName, _ in pairs(E:FilterCraftPlayers(itemName)) do
+    --                if not C:IsPlayerOnline(playerName) then
+    --                    players[#players + 1] = strsplit("-", playerName)
+    --                else
+    --                    playersOnline[#playersOnline + 1] = strsplit("-", playerName)
+    --                end
+    --            end
+    --            if #players + #playersOnline > 0 then
+    --                local msg = "Joo."
+    --                if #playersOnline == 0 then
+    --                    msg = msg.." Bohužel nikdo z nich není online."
+    --                else
+    --                    msg = msg.." Z těch online třeba "..table.concat(table.slice(playersOnline, 1, 5), ", ").."."
+    --                end
+    --
+    --                if #players > 0 then
+    --                    if #playersOnline == 0 then
+    --                        msg = msg.." Z těch offline třeba "..table.concat(table.slice(players, 1, 5), ", ").."."
+    --                    else
+    --                        msg = msg.." Jinak " .. table.concat(table.slice(players, 1, 5),", ") .. "."
+    --                    end
+    --                end
+    --
+    --                SendChatMessage(msg, "GUILD")
+    --            end
+    --            return
+    --        end
+    --    end
+    --    if string.find(strlower(message), "kdo je aos") then
+    --        SendChatMessage("Je to Borec!", "GUILD")
+    --    end
+    --    if string.find(strlower(message), "kdo je ixide") then
+    --        SendChatMessage("Marek Sajrajt", "GUILD")
+    --    end
+    --    if strlower(message) == "!hack" then
+    --        local tmp = {
+    --            [3] = "Spouštím hackovací sekvenci...",
+    --            [7] = "Detekuji OS...",
+    --            [9] = "Detekováno: Windows",
+    --            [10] = "Zahajuji přenos kódu mimo prostředí Wow.exe",
+    --            [15] = "Přenos úspěšně dokončen.",
+    --            [16] = "Procházím systémové soubory...",
+    --            [26] = "Systémové klíče objeveny!",
+    --            [26] = "Přístup odepřen.",
+    --            [27] = "Opakuji...",
+    --            [31] = "Přístup odepřen.",
+    --            [32] = "Opakuji...",
+    --            [46] = "Přístup povolen.",
+    --            [48] = "Spouštím proces miner.exe",
+    --        }
+    --        for time, text in pairs(tmp) do
+    --            C_Timer.After(time, function()
+    --                SendChatMessage(text, "GUILD")
+    --            end)
+    --        end
+    --    end
+    --    if string.find(strlower(message), "kdo je niarkas") then
+    --        SendChatMessage("Týpek, co neuměl točit, tak šel radši tankovat. KEKW", "GUILD")
+    --    end
+    --end
 end

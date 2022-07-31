@@ -5,7 +5,6 @@
 ---
 local AddonName, E = ...
 
-
 Bohemian_ProfessionsConfig = {
     showProfessions = true,
     showOwnReagents = true,
@@ -16,7 +15,6 @@ Bohemian.RegisterModule(AddonName, E, function()
 
     Bohemian_ProfessionsConfig.lastCraftSync = Bohemian_ProfessionsConfig.lastCraftSync or {}
 
-
     E:CreateGuildFrameProfessionsColumnHeader()
     E:CreateGuildCraftFrame()
     E:AddLFGFrameButton()
@@ -24,6 +22,7 @@ Bohemian.RegisterModule(AddonName, E, function()
     E:AdjustDetailFrame()
     E:RenderColumns()
     E:Hook()
+    E:CacheCraftHistoryPayload()
 end)
 
 local C = E.CORE
@@ -35,9 +34,6 @@ end
 if not Crafts then
     Crafts = {}
 end
-
-
-
 
 E.EVENT = {
     PROFESSION_INFO = "PROFESSION_INFO",
@@ -54,13 +50,13 @@ function E:ShareProfessions(sendTo)
         _ = GetSkillLineInfo(skillIndex)
         if not isHeader then
             if E.PROFESSIONS[skillName] then
-                skillRanks[skillName] = skillRank.."-"..skillMaxRank
+                skillRanks[skillName] = skillRank .. "-" .. skillMaxRank
             end
         end
     end
     local _, _, offset, numSlots = GetSpellTabInfo(1)
     local foundMining = false
-    for j = offset+1, offset+numSlots do
+    for j = offset + 1, offset + numSlots do
         local name, _, _, _, _, _, spellId = GetSpellInfo(GetSpellBookItemName(j, BOOKTYPE_SPELL))
         if E.PROFESSIONS[name] then
             local data = spellId
@@ -74,7 +70,7 @@ function E:ShareProfessions(sendTo)
                     foundMining = true
                 end
                 if skillRanks[name] then
-                    data = data.."-"..skillRanks[name]
+                    data = data .. "-" .. skillRanks[name]
                 end
                 table.insert(skills, data)
             end
@@ -91,7 +87,6 @@ end
 function E:RequestProfessionInfo()
     C:SendEvent("GUILD", self.EVENT.PROFESSION_INFO_REQUEST)
 end
-
 
 function E:RequestProfessionInfoFrom(player)
     C:SendEventTo(player, self.EVENT.PROFESSION_INFO_REQUEST)
@@ -129,17 +124,17 @@ function E:ShareCrafts()
         end
         local craftName, _, craftType, numAvailable = GetCraftInfo(i)
         local numReagents = GetCraftNumReagents(i)
-        local minMade,maxMade = GetCraftNumMade(i)
+        local minMade, maxMade = GetCraftNumMade(i)
         local icon = GetCraftIcon(i)
         local desc = GetCraftDescription(i) or ""
         desc = C:encodeBase64(desc)
         local link = GetCraftItemLink(i)
         local cooldown = GetCraftCooldown(i) or 0
         local reagents = {}
-        for j=1, numReagents do
+        for j = 1, numReagents do
             local _, reagentTexture, reagentCount, playerReagentCount = GetCraftReagentInfo(i, j);
             local reagentLink = GetCraftReagentItemLink(i, j)
-            table.insert(reagents, table.concat(table.removeNil({reagentTexture, reagentCount, playerReagentCount, reagentLink}), "~"))
+            table.insert(reagents, table.concat(table.removeNil({ reagentTexture, reagentCount, playerReagentCount, reagentLink }), "~"))
         end
         reagents = table.concat(reagents, "*")
         table.insert(payload, C:PreparePayload(self.EVENT.CRAFT, profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, i, minMade, maxMade))
@@ -175,14 +170,14 @@ function E:ShareTradeSkills()
         local craftName, craftType, numAvailable = GetTradeSkillInfo(i)
         if craftType ~= "header" then
             local numReagents = GetTradeSkillNumReagents(i)
-            local minMade,maxMade = GetTradeSkillNumMade(i)
+            local minMade, maxMade = GetTradeSkillNumMade(i)
             local icon = GetTradeSkillIcon(i)
             local desc = " "
             desc = C:encodeBase64(desc)
             local link = GetTradeSkillRecipeLink(i)
             local cooldown = GetTradeSkillCooldown(i) or 0
             local reagents = {}
-            for j=1, numReagents do
+            for j = 1, numReagents do
                 local reagentName, reagentTexture, reagentCount, playerReagentCount = GetTradeSkillReagentInfo(i, j);
                 local reagentLink = GetTradeSkillReagentItemLink(i, j)
                 if reagentName == nil or reagentLink == nil then
@@ -190,7 +185,7 @@ function E:ShareTradeSkills()
                     return
                 end
 
-                table.insert(reagents, table.concat(table.removeNil({reagentTexture, reagentCount, playerReagentCount, reagentLink}), "~"))
+                table.insert(reagents, table.concat(table.removeNil({ reagentTexture, reagentCount, playerReagentCount, reagentLink }), "~"))
             end
             reagents = table.concat(reagents, "*")
             if not E:ValidateProf(profName) then
@@ -241,7 +236,7 @@ function E:ShareCraftHistory()
             for craftName, data in pairs(item) do
                 local reagents = {}
                 for _, reagent in pairs(data.reagents) do
-                    table.insert(reagents, {reagent.texture, reagent.count, reagent.playerCount, reagent.link}, "~")
+                    table.insert(reagents, { reagent.texture, reagent.count, reagent.playerCount, reagent.link }, "~")
                 end
                 reagents = table.concat(reagents, "*")
                 local data = C:PreparePayload(self.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, data.desc, data.cooldown, reagents, data.link, data.id, data.min, data.max)
@@ -260,118 +255,51 @@ function E:ShareCraftHistory()
     end
 end
 
+function E:CacheCraftHistoryPayload()
+    E.craftsHistoryPayload = {}
+    local allCrafts = {}
+    for playerName, professions in pairs(E:GetGuildCrafts()) do
+        for profName, item in pairs(professions) do
+            for craftName, data in pairs(item) do
+                allCrafts[#allCrafts + 1] = { playerName, profName, craftName, data }
+            end
+        end
+    end
+    for _, item in ipairs(allCrafts) do
+        local playerName = item[1]
+        local profName = item[2]
+        local craftName = item[3]
+        local data = item[4]
+
+        local reagents = {}
+        for _, reagent in pairs(data.reagents) do
+            table.insert(reagents, table.concat({ reagent.texture, reagent.count, reagent.playerCount, reagent.link }, "~"))
+        end
+        reagents = table.concat(reagents, "*")
+        local data = C:PreparePayload(E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
+        -- C:SendEventTo(sendTo, E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
+        table.insert(E.craftsHistoryPayload, data)
+    end
+    E.craftsHistoryPayload = { C:PreparePayloadForSend(E.craftsHistoryPayload) }
+end
+
 function E:ShareAllCraftHistory(sendTo)
     if E.sharing then
         return
     end
-    local crafts = E:GetGuildCrafts()
-    if crafts then
-        local i = 1
-        local allCrafts = {}
-        for playerName, professions in pairs(E:GetGuildCrafts()) do
-            for profName, item in pairs(professions) do
-                for craftName, data in pairs(item) do
-                    allCrafts[#allCrafts + 1] = {playerName, profName, craftName, data}
-                end
-            end
-        end
-        local payload = {}
-        local payloads = {}
-        local interval = 0.1
-        local currentInterval = 0
-        local t = time()
-        local wait = false
-        E.sharing = true
-        --print("Sharing all crafts", sendTo)
-        C:AddToUpdateQueue(function(id, elapsed)
-            if wait then
-                currentInterval = currentInterval + elapsed
-                if currentInterval < interval then
-                    return
-                end
-                currentInterval = 0
-                wait = false
-            end
-
-            if i > #allCrafts then
-                C:RemoveFromUpdateQueue(id)
-                table.insert(payloads, { C:PreparePayloadForSend(payload) })
-                for _, payload in ipairs(payloads) do
-                    local id, chunks = unpack(payload)
-                    --print("Sending", id, #chunks, time() - t)
-                    if sendTo then
-                        C:SendEventTo(sendTo, C.EVENT.PAYLOAD_START, "CRAFTS", #chunks, id)
-                    else
-                        C:SendEvent("GUILD", C.EVENT.BROADCAST_START, "CRAFTS", #chunks, id)
-                        C_Timer.After(1, function()
-                            C:StartBroadcastPayload(id)
-                        end)
-                    end
-                end
-                E.sharing = false
-                --print("Done")
-                return
-            end
-            if i % 10 == 0 then
-                table.insert(payloads, { C:PreparePayloadForSend(payload) })
-                payload = {}
-                wait = true
-            end
-            local item = allCrafts[i]
-            local playerName = item[1]
-            local profName = item[2]
-            local craftName = item[3]
-            local data = item[4]
-
-            local reagents = {}
-            for _, reagent in pairs(data.reagents) do
-                table.insert(reagents, table.concat({reagent.texture, reagent.count, reagent.playerCount, reagent.link}, "~"))
-            end
-            reagents = table.concat(reagents, "*")
-            local data = C:PreparePayload(E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
-            -- C:SendEventTo(sendTo, E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
-             table.insert(payload, data)
-            i = i + 1
+    local id, chunks = unpack(E.craftsHistoryPayload)
+    E.sharing = true
+    if sendTo then
+        C:SendEventTo(sendTo, C.EVENT.PAYLOAD_START, "CRAFTS", #chunks, id)
+    else
+        C:SendEvent("GUILD", C.EVENT.BROADCAST_START, "CRAFTS", #chunks, id)
+        C_Timer.After(1, function()
+            C:StartBroadcastPayload(id)
         end)
     end
+    E.sharing = false
 end
 
-function E:PrepareAllCraftHistoryForSend(cb)
-    local crafts = E:GetGuildCrafts()
-    if crafts then
-        local i = 1
-        local allCrafts = {}
-        for playerName, professions in pairs(E:GetGuildCrafts()) do
-            for profName, item in pairs(professions) do
-                for craftName, data in pairs(item) do
-                    allCrafts[#allCrafts + 1] = {playerName, profName, craftName, data}
-                end
-            end
-        end
-        local payload = {}
-        C:AddToUpdateQueue(function(id)
-            if i > #allCrafts then
-                C:RemoveFromUpdateQueue(id)
-                cb(payload)
-                return
-            end
-            local item = allCrafts[i]
-            local playerName = item[1]
-            local profName = item[2]
-            local craftName = item[3]
-            local data = item[4]
-
-            local reagents = {}
-            for _, reagent in pairs(data.reagents) do
-                table.insert(reagents, table.concat({reagent.texture, reagent.count, reagent.playerCount, reagent.link}, "~"))
-            end
-            reagents = table.concat(reagents, "*")
-            local data = C:PreparePayload(self.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, data.desc, data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
-            table.insert(payload, data)
-            i = i + 1
-        end)
-    end
-end
 
 function E:GetPlayerCraftHistory(name)
     return E:GetGuildCrafts()[name or C:GetPlayerName(true)]
@@ -415,7 +343,6 @@ function E:GetGuildCrafts()
     local guildName = C:GetGuildName()
     return Crafts[guildName] or {}
 end
-
 
 function E:CleanUpOldMembers(cb)
     for playerName, _ in pairs(Crafts) do

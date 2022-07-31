@@ -1,7 +1,7 @@
 ## Interface: 20503
 ## Title: |cFF4068E0|| - |rProfessions
 ## Author: Elerae-Golemagg
-## Version: 1.0.0
+## Version: 1.0.1
 ## SavedVariables: Crafts, Professions
 ## SavedVariablesPerCharacter: Bohemian_ProfessionsConfig
 ## Dependencies: Bohemian

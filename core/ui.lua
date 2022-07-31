@@ -307,7 +307,7 @@ function E:GetChildrenWidth(frame)
     for _, child in ipairs(kids) do
         if child:GetName() then
             local point, relativeTo, relativePoint, xOfs, yOfs = child:GetPoint()
-            width = child:GetWidth() + width + xOfs
+            width = child:GetWidth() + width + (xOfs or 0)
         end
     end
     return width
