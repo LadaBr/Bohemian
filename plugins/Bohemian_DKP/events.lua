@@ -45,9 +45,10 @@ function A:CACHED_GUILD_DATA()
     local canEditOfficer = CanEditOfficerNote()
     local newRosterDKP = {}
     for i = 0, totalMembers do
-        fullName, rank, rankIndex, level, class, zone, note, officernote, online, isAway, classFileName = GetGuildRosterInfo(i);
+        local fullName, rank, rankIndex, level, class, zone, note, officernote, online, isAway, classFileName = GetGuildRosterInfo(i);
         if fullName then
             local currentDKP = self:NoteDKPToNumber(note)
+
             if currentDKP == nil and canEdit and canEditOfficer and not E.inProcess[fullName] then
                 currentDKP = Bohemian_DKPConfig.startingDKP
                 E.inProcess[fullName] = currentDKP
@@ -55,9 +56,7 @@ function A:CACHED_GUILD_DATA()
                     GuildRosterSetOfficerNote(i, note)
                 end
                 C_Timer.After(math.random(1, 20), function()
-                    if not E.roster[fullName] then
-                        E:SetInitialDKP(fullName)
-                    end
+                    E:SetInitialDKPDelayed(fullName)
                 end)
             elseif E.inProcess[fullName] and currentDKP ~= nil then
                 E.inProcess[fullName] = nil

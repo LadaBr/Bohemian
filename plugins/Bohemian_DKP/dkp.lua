@@ -41,8 +41,6 @@ function E:LoadDefaults()
     Bohemian_DKPConfig.startingDKP = Bohemian_DKPConfig.startingDKP or 100
 end
 
-
-
 function E:AddDKPSelected(value, channel, reason, percent)
     for name, state in pairs(self.editModeSelected) do
         if state then
@@ -58,16 +56,16 @@ function E:SubtractDKPSelected(value, channel, reason, percent)
     end
 end
 function E:SubtractDKP(index, value, channel, reason, percent)
-    local currentValue = self:NoteDKPToNumber(select(7, GetGuildRosterInfo(index)))
-    self:SaveDKP(index, percent and currentValue - (currentValue * value/100) or currentValue - value, channel, reason)
+    local currentValue = self:NoteDKPToNumber(select(7, GetGuildRosterInfo(index))) or 0
+    self:SaveDKP(index, percent and currentValue - (currentValue * value / 100) or currentValue - value, channel, reason)
 end
 function E:SetDKP(index, value, channel, reason, percent)
-    local currentValue = self:NoteDKPToNumber(select(7, GetGuildRosterInfo(index)))
-    self:SaveDKP(index, percent and currentValue * value/100 or value, channel, reason)
+    local currentValue = self:NoteDKPToNumber(select(7, GetGuildRosterInfo(index))) or 0
+    self:SaveDKP(index, percent and currentValue * value / 100 or value, channel, reason)
 end
 function E:AddDKP(index, value, channel, reason, percent)
-    local currentValue = self:NoteDKPToNumber(select(7, GetGuildRosterInfo(index)))
-    self:SaveDKP(index, percent and currentValue + (currentValue * value/100) or currentValue + value, channel, reason)
+    local currentValue = self:NoteDKPToNumber(select(7, GetGuildRosterInfo(index))) or 0
+    self:SaveDKP(index, percent and currentValue + (currentValue * value / 100) or currentValue + value, channel, reason)
 end
 
 function E:SetInitialDKP(playerName)
@@ -83,7 +81,7 @@ function E:AwardDKPRaid(value, reason)
         if not realm or #realm <= 0 then
             realm = realmName
         end
-        local fullName = name.."-"..realm
+        local fullName = name .. "-" .. realm
         local guildIndex = C.rosterIndex[fullName]
         if guildIndex then
             local newValue = (self:GetCurrentDKP(fullName) or 0) + value
@@ -134,10 +132,10 @@ function E:GetCurrentDKP(fullName)
     return self.roster[fullName or C:GetPlayerName(true)] or (C.rosterIndex[fullName] and E:NoteDKPToNumber(select(7, GetGuildRosterInfo(C.rosterIndex[fullName]))) or nil)
 end
 function E:NoteDKPToNumber(note)
-    if note == nil then
+    if note == nil or note == '' then
         return
     end
-    local value =  tonumber(note:match("0*(%d+)"))
+    local value = tonumber(note:match("0*(%d+)"))
     if note:sub(1, 1) == "-" then
         value = value * -1
     end
@@ -197,4 +195,10 @@ end
 
 function E:CanEditDKP()
     return CanEditPublicNote() and CanEditOfficerNote()
+end
+
+function E:SetInitialDKPDelayed(fullName)
+    if not E.roster[fullName] then
+        E:SetInitialDKP(fullName)
+    end
 end

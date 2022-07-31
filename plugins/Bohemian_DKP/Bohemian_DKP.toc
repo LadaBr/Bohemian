@@ -1,7 +1,7 @@
 ## Interface: 20503
 ## Title: |cFF4068E0|| - |rDKP
 ## Author: Elerae-Golemagg
-## Version: 1.0.1
+## Version: 1.1.0
 ## SavedVariablesPerCharacter: Bohemian_DKPConfig
 ## Dependencies: Bohemian
 ## LoadOnDemand: 0

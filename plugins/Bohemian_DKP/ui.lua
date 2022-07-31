@@ -394,7 +394,7 @@ end
 
 function E:RefreshDKPColumn(index, note, online)
     local btn = _G["GuildFrameGuildStatusButton"..index.."Note"]
-    local dkp = self:NoteDKPToNumber(note)
+    local dkp = note and note ~= '' and self:NoteDKPToNumber(note) or "-"
     if online then
         btn:SetTextColor(1.0, 1.0, 1.0)
     elseif not online then

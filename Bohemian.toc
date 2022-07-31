@@ -1,7 +1,7 @@
 ## Interface: 20504
 ## Title: |cFF4068E0Bohemian|r
 ## Author: Elerae-Golemagg
-## Version: 3.2.0
+## Version: 3.2.1
 ## SavedVariablesPerCharacter: BohemianConfig
 
 libs\libs.xml
