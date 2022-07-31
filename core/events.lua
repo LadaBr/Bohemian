@@ -287,7 +287,7 @@ function A:UPDATE_GUILD_MEMBER(row, _, _, fullName)
         versionText:SetTextColor(0.5, 0.5, 0.5)
         version:Show()
         version.tooltip = nil
-    elseif E.guildRosterVersions.old[fullName] then
+    elseif E.guildRosterVersions.old[fullName] and E.latestVersion then
         local majorDiff = E.guildRosterVersions.old[fullName]:sub(1, 1) ~= E.latestVersion:sub(1,1)
         if majorDiff then
             versionText:SetTextColor(1, 0, 0)
