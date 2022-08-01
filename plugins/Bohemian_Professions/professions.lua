@@ -14,8 +14,6 @@ Bohemian_ProfessionsConfig = {
 Bohemian.RegisterModule(AddonName, E, function()
 
     Bohemian_ProfessionsConfig.lastCraftSync = Bohemian_ProfessionsConfig.lastCraftSync or {}
-
-    E:CacheCraftHistoryPayload()
     E:CreateGuildFrameProfessionsColumnHeader()
     E:CreateGuildCraftFrame()
     E:AddLFGFrameButton()

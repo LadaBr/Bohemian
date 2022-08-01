@@ -257,3 +257,9 @@ function A:CHAT_MSG_GUILD(message)
     --    end
     --end
 end
+
+function A:PLAYER_ENTERING_WORLD(isLogin, isReload)
+    if isLogin and not isReload then
+        E:CacheCraftHistoryPayload()
+    end
+end
