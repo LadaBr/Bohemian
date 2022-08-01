@@ -323,11 +323,9 @@ function E:ShareAllCraftHistory(sendTo)
         if E.historyCached then
             C:RemoveFromUpdateQueue(id)
             E:SendAllCraftHistory(sendTo)
+            E.sharing = false
             return
         end
-    end)
-    C_Timer.After(600, function()
-        E.sharing = false
     end)
 end
 
