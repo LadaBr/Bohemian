@@ -15,6 +15,7 @@ Bohemian.RegisterModule(AddonName, E, function()
 
     Bohemian_ProfessionsConfig.lastCraftSync = Bohemian_ProfessionsConfig.lastCraftSync or {}
 
+    E:CacheCraftHistoryPayload()
     E:CreateGuildFrameProfessionsColumnHeader()
     E:CreateGuildCraftFrame()
     E:AddLFGFrameButton()
@@ -22,7 +23,6 @@ Bohemian.RegisterModule(AddonName, E, function()
     E:AdjustDetailFrame()
     E:RenderColumns()
     E:Hook()
-    E:CacheCraftHistoryPayload()
 end)
 
 local C = E.CORE
@@ -256,6 +256,7 @@ function E:ShareCraftHistory()
 end
 
 function E:CacheCraftHistoryPayload()
+    local payload = {}
     E.craftsHistoryPayload = {}
     local allCrafts = {}
     for playerName, professions in pairs(E:GetGuildCrafts()) do
@@ -278,28 +279,57 @@ function E:CacheCraftHistoryPayload()
         reagents = table.concat(reagents, "*")
         local data = C:PreparePayload(E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
         -- C:SendEventTo(sendTo, E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
-        table.insert(E.craftsHistoryPayload, data)
+        table.insert(payload, data)
     end
-    E.craftsHistoryPayload = { C:PreparePayloadForSend(E.craftsHistoryPayload) }
+    local i = 1
+    C:AddToUpdateQueue(function(id, elapsed)
+        if i > #payload then
+            C:RemoveFromUpdateQueue(id)
+            E.historyCached = true
+            return
+        end
+        local chunk = {}
+        for j = 1, 10 do
+            if i + j > #payload + 1 then
+                break
+            end
+            table.insert(chunk, payload[i + j])
+            i = i + 1
+        end
+        table.insert(E.craftsHistoryPayload, {C:PreparePayloadForSend(chunk)})
+    end)
+    --E.craftsHistoryPayload = { C:PreparePayloadForSend(E.craftsHistoryPayload) }
 end
+function E:SendAllCraftHistory(sendTo)
+    for _, payload in ipairs(E.craftsHistoryPayload) do
 
+        local id, chunks = unpack(payload)
+         if sendTo then
+            C:SendEventTo(sendTo, C.EVENT.PAYLOAD_START, "CRAFTS", #chunks, id)
+        else
+            C:SendEvent("GUILD", C.EVENT.BROADCAST_START, "CRAFTS", #chunks, id)
+            C_Timer.After(1, function()
+                C:StartBroadcastPayload(id)
+            end)
+        end
+    end
+end
 function E:ShareAllCraftHistory(sendTo)
     if E.sharing then
         return
     end
-    local id, chunks = unpack(E.craftsHistoryPayload)
     E.sharing = true
-    if sendTo then
-        C:SendEventTo(sendTo, C.EVENT.PAYLOAD_START, "CRAFTS", #chunks, id)
-    else
-        C:SendEvent("GUILD", C.EVENT.BROADCAST_START, "CRAFTS", #chunks, id)
-        C_Timer.After(1, function()
-            C:StartBroadcastPayload(id)
-        end)
-    end
-    E.sharing = false
+    C:AddToUpdateQueue(function(id, elapsed)
+        if E.historyCached then
+            C:RemoveFromUpdateQueue(id)
+            E:SendAllCraftHistory(sendTo)
+            return
+        end
+    end)
+    C_Timer.After(600, function()
+        E.sharing = false
+    end)
 end
-
 
 function E:GetPlayerCraftHistory(name)
     return E:GetGuildCrafts()[name or C:GetPlayerName(true)]
