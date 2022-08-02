@@ -128,8 +128,6 @@ function A:GUILD_MEMBER_COUNT_CHANGED(_, online)
     end
 end
 
-
-
 function A:CRAFT_HISTORY_REQUEST(sender)
     if E:CanSync() then
         E:ShareAllCraftHistory(sender)
@@ -142,7 +140,9 @@ function A:SYNC_DONE()
     C_Timer.After(5, function()
         local players = C:ProcessPlayersForSync(E.onlineSince)
         E.onlineSince = {}
-        table.sort(players, function (a, b) return a.onlineSince < b.onlineSince end)
+        table.sort(players, function(a, b)
+            return a.onlineSince < b.onlineSince
+        end)
         if #players > 0 then
             C:SendEventTo(players[1].name, "CRAFT_HISTORY_REQUEST")
         end
@@ -151,7 +151,6 @@ function A:SYNC_DONE()
         --    C:SendEventTo(player.name, "CRAFT_HISTORY_REQUEST")
         --end
     end)
-
 end
 
 function A:CRAFT_HISTORY_CHECK(sender)
@@ -259,7 +258,15 @@ function A:CHAT_MSG_GUILD(message)
 end
 
 function A:PLAYER_ENTERING_WORLD(isLogin, isReload)
-    if isLogin and not isReload then
+    E.isLogin = isLogin
+    E.isReload = isReload
+end
+
+function A:CACHED_GUILD_DATA()
+    E:CleanUpOldMembers(function(oldMember)
+        E:GetGuildCrafts()[oldMember] = nil
+    end)
+    if E.isLogin and not E.isReload then
         E:CacheCraftHistoryPayload()
     end
 end

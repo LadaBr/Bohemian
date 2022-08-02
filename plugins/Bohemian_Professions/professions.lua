@@ -300,7 +300,6 @@ function E:CacheCraftHistoryPayload()
 end
 function E:SendAllCraftHistory(sendTo)
     for _, payload in ipairs(E.craftsHistoryPayload) do
-
         local id, chunks = unpack(payload)
          if sendTo then
             C:SendEventTo(sendTo, C.EVENT.PAYLOAD_START, "CRAFTS", #chunks, id)
@@ -371,9 +370,9 @@ function E:GetGuildCrafts()
 end
 
 function E:CleanUpOldMembers(cb)
-    for playerName, _ in pairs(Crafts) do
+    for playerName, _ in pairs(E:GetGuildCrafts()) do
         local inGuild = false
-        for name, _ in pairs(self.guildRoster) do
+        for name, _ in pairs(C.guildRoster) do
             if playerName == name then
                 inGuild = true
                 break
