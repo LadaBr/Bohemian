@@ -2,7 +2,7 @@
 ## Title: |cFF4068E0|| - |rProfessions
 ## Author: Elerae-Golemagg
 ## Version: 1.0.1
-## SavedVariables: Crafts, Professions
+## SavedVariables: Crafts, Professions, CraftsSyncTime
 ## SavedVariablesPerCharacter: Bohemian_ProfessionsConfig
 ## Dependencies: Bohemian
 ## LoadOnDemand: 0

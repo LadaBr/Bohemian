@@ -423,7 +423,7 @@ function E:UpdateCrafts()
             end
 
             skillButton:SetText(text)
-            local color = self.SkillTypeColor[craft.data.type]
+            local color = self:GetSkillTypeColor(craft.data.type)
             skillButton.craft = craft
             if color then
                 skillButton:SetNormalFontObject(color.font);
@@ -456,7 +456,7 @@ function E:UpdateCraftHighlight(i)
         GuildCraftFrameHighlight:SetPoint("TOPLEFT", skillButton, "TOPLEFT", 0, 0);
         GuildCraftFrameHighlight:SetWidth(skillButton:GetWidth())
         skillButton:LockHighlight()
-        local color = E.SkillTypeColor[self.selectedCraft.data.type]
+        local color = E:GetSkillTypeColor(self.selectedCraft.data.type)
         if color then
             GuildCraftFrameHighlightTex:SetVertexColor(color.r, color.g, color.b, 1)
         end

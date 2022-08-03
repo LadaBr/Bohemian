@@ -21,6 +21,8 @@ Bohemian.RegisterModule(AddonName, E, function()
     E:AdjustDetailFrame()
     E:RenderColumns()
     E:Hook()
+    E:StartCraftHistoryProcessQueue()
+
 end)
 
 local C = E.CORE
@@ -33,10 +35,17 @@ if not Crafts then
     Crafts = {}
 end
 
+if not CraftsSyncTime then
+    CraftsSyncTime = {}
+end
+
 E.EVENT = {
     PROFESSION_INFO = "PROFESSION_INFO",
     PROFESSION_INFO_REQUEST = "PROFESSION_INFO_REQUEST",
     CRAFT = "CRAFT",
+    CRAFT2 = "CRAFT2",
+    CRAFT_HISTORY_REQUEST = "CRAFT_HISTORY_REQUEST",
+    CRAFT_HISTORY_SYNC_FINISHED = "CRAFT_HISTORY_SYNC_FINISHED",
 }
 
 function E:ShareProfessions(sendTo)
@@ -91,18 +100,18 @@ function E:RequestProfessionInfoFrom(player)
 end
 
 function E:CanSync()
-    return not IsInInstance() and not IsActiveBattlefieldArena() and not E.sharing
+    return not IsInInstance() and not IsActiveBattlefieldArena()
 end
 
 E.updateQueue = {}
 
 function E:ShareCrafts()
     local numCrafts = GetNumCrafts()
-    local payload = {}
     local profName, _, _ = GetCraftDisplaySkillLine()
     if not profName then
         return
     end
+    local profId = E.PROFESSION_IDS[profName]
     self.sharedCrafts[profName] = GetServerTime()
     local i = 1
     local wait = 0
@@ -113,7 +122,7 @@ function E:ShareCrafts()
         end
         if i > numCrafts then
             C:RemoveFromUpdateQueue(id)
-            C:BroadcastPayload("CRAFTS", "GUILD", payload)
+            C:SendEvent("GUILD", E.EVENT.CRAFT_HISTORY_SYNC_FINISHED, C:GetPlayerName(true), self.sharedCrafts[profName])
             return
         end
         if not E:ValidateCraft(profName) then
@@ -121,32 +130,33 @@ function E:ShareCrafts()
             return
         end
         local craftName, _, craftType, numAvailable = GetCraftInfo(i)
+        local craftTypeId = E.SKILL_TYPE_ID[craftType]
         local numReagents = GetCraftNumReagents(i)
         local minMade, maxMade = GetCraftNumMade(i)
-        local icon = GetCraftIcon(i)
-        local desc = GetCraftDescription(i) or ""
-        desc = C:encodeBase64(desc)
         local link = GetCraftItemLink(i)
+        local skillId = E:ParseSpellLink(link)
+        local icon = GetCraftIcon(i)
         local cooldown = GetCraftCooldown(i) or 0
         local reagents = {}
         for j = 1, numReagents do
             local _, reagentTexture, reagentCount, playerReagentCount = GetCraftReagentInfo(i, j);
             local reagentLink = GetCraftReagentItemLink(i, j)
-            table.insert(reagents, table.concat(table.removeNil({ reagentTexture, reagentCount, playerReagentCount, reagentLink }), "~"))
+            local reagentId = E:ParseItemLink(reagentLink)
+            table.insert(reagents, table.concat(table.removeNil({ reagentCount, playerReagentCount, reagentId }), "~"))
         end
         reagents = table.concat(reagents, "*")
-        table.insert(payload, C:PreparePayload(self.EVENT.CRAFT, profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, i, minMade, maxMade))
+        C:SendEvent("GUILD", self.EVENT.CRAFT2, profId, skillId, craftTypeId, numAvailable, cooldown, reagents, i, minMade, maxMade, icon, E.sharedCrafts[profName])
         i = i + 1
     end)
 end
 
 function E:ShareTradeSkills()
     local numCrafts = GetNumTradeSkills()
-    local payload = {}
     local profName = GetTradeSkillLine()
     if not profName then
         return
     end
+    local profId = E.PROFESSION_IDS[profName]
     self.sharedCrafts[profName] = GetServerTime()
     local i = 1
     local wait = 0
@@ -157,7 +167,7 @@ function E:ShareTradeSkills()
         end
         if i > numCrafts then
             C:RemoveFromUpdateQueue(id)
-            C:BroadcastPayload("CRAFTS", "GUILD", payload)
+            C:SendEvent("GUILD", E.EVENT.CRAFT_HISTORY_SYNC_FINISHED, C:GetPlayerName(true), self.sharedCrafts[profName])
             return
         end
         if not E:ValidateProf(profName) then
@@ -167,30 +177,31 @@ function E:ShareTradeSkills()
 
         local craftName, craftType, numAvailable = GetTradeSkillInfo(i)
         if craftType ~= "header" then
+            local craftTypeId = E.SKILL_TYPE_ID[craftType]
             local numReagents = GetTradeSkillNumReagents(i)
             local minMade, maxMade = GetTradeSkillNumMade(i)
-            local icon = GetTradeSkillIcon(i)
-            local desc = " "
-            desc = C:encodeBase64(desc)
             local link = GetTradeSkillRecipeLink(i)
+            local icon = GetTradeSkillIcon(i)
+            local skillId = E:ParseSpellLink(link)
             local cooldown = GetTradeSkillCooldown(i) or 0
             local reagents = {}
             for j = 1, numReagents do
                 local reagentName, reagentTexture, reagentCount, playerReagentCount = GetTradeSkillReagentInfo(i, j);
                 local reagentLink = GetTradeSkillReagentItemLink(i, j)
+
                 if reagentName == nil or reagentLink == nil then
                     wait = 0.1
                     return
                 end
-
-                table.insert(reagents, table.concat(table.removeNil({ reagentTexture, reagentCount, playerReagentCount, reagentLink }), "~"))
+                local reagentId = E:ParseItemLink(reagentLink)
+                table.insert(reagents, table.concat(table.removeNil({ reagentCount, playerReagentCount, reagentId }), "~"))
             end
             reagents = table.concat(reagents, "*")
             if not E:ValidateProf(profName) then
                 C:RemoveFromUpdateQueue(id)
                 return
             end
-            table.insert(payload, C:PreparePayload(E.EVENT.CRAFT, profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, i, minMade, maxMade))
+            C:SendEvent("GUILD", E.EVENT.CRAFT2, profId, skillId, craftTypeId, numAvailable, cooldown, reagents, i, minMade, maxMade, icon, E.sharedCrafts[profName])
         end
         i = i + 1
     end)
@@ -226,105 +237,7 @@ function E:ShareTradeSkillsDelayed()
     end
     self:ShareTradeSkills()
 end
-function E:ShareCraftHistory()
-    local crafts = self:GetPlayerCraftHistory()
-    if crafts then
-        local payload = {}
-        for profName, item in ipairs(crafts) do
-            for craftName, data in pairs(item) do
-                local reagents = {}
-                for _, reagent in pairs(data.reagents) do
-                    table.insert(reagents, { reagent.texture, reagent.count, reagent.playerCount, reagent.link }, "~")
-                end
-                reagents = table.concat(reagents, "*")
-                local data = C:PreparePayload(self.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, data.desc, data.cooldown, reagents, data.link, data.id, data.min, data.max)
-                table.insert(payload, data)
-            end
-        end
-        E:Debug("Sharing craft history")
-        if sendTo then
-            C:SendEventTo(sendTo, C.EVENT.PAYLOAD_START, "CRAFTS", #chunks, id)
-        else
-            C:SendEvent("GUILD", C.EVENT.BROADCAST_START, "CRAFTS", #chunks, id)
-            C_Timer.After(1, function()
-                C:StartBroadcastPayload(id)
-            end)
-        end
-    end
-end
 
-function E:CacheCraftHistoryPayload()
-    local payload = {}
-    E.craftsHistoryPayload = {}
-    local allCrafts = {}
-    for playerName, professions in pairs(E:GetGuildCrafts()) do
-        for profName, item in pairs(professions) do
-            for craftName, data in pairs(item) do
-                allCrafts[#allCrafts + 1] = { playerName, profName, craftName, data }
-            end
-        end
-    end
-    for _, item in ipairs(allCrafts) do
-        local playerName = item[1]
-        local profName = item[2]
-        local craftName = item[3]
-        local data = item[4]
-
-        local reagents = {}
-        for _, reagent in pairs(data.reagents) do
-            table.insert(reagents, table.concat({ reagent.texture, reagent.count, reagent.playerCount, reagent.link }, "~"))
-        end
-        reagents = table.concat(reagents, "*")
-        local data = C:PreparePayload(E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
-        -- C:SendEventTo(sendTo, E.EVENT.CRAFT, profName, craftName, data.type, data.available, data.icon, C:encodeBase64(data.desc), data.cooldown, reagents, data.link, data.id, data.min, data.max, playerName)
-        table.insert(payload, data)
-    end
-    local i = 1
-    C:AddToUpdateQueue(function(id, elapsed)
-        if i > #payload then
-            C:RemoveFromUpdateQueue(id)
-            E.historyCached = true
-            return
-        end
-        local chunk = {}
-        for j = 1, 10 do
-            if i + j > #payload + 1 then
-                break
-            end
-            table.insert(chunk, payload[i + j])
-            i = i + 1
-        end
-        table.insert(E.craftsHistoryPayload, {C:PreparePayloadForSend(chunk)})
-    end)
-    --E.craftsHistoryPayload = { C:PreparePayloadForSend(E.craftsHistoryPayload) }
-end
-function E:SendAllCraftHistory(sendTo)
-    for _, payload in ipairs(E.craftsHistoryPayload) do
-        local id, chunks = unpack(payload)
-         if sendTo then
-            C:SendEventTo(sendTo, C.EVENT.PAYLOAD_START, "CRAFTS", #chunks, id)
-        else
-            C:SendEvent("GUILD", C.EVENT.BROADCAST_START, "CRAFTS", #chunks, id)
-            C_Timer.After(1, function()
-                C:StartBroadcastPayload(id)
-            end)
-        end
-    end
-end
-function E:ShareAllCraftHistory(sendTo)
-    if E.sharing then
-        return
-    end
-    E.sharing = true
-    C:AddToUpdateQueue(function(id, elapsed)
-        if E.historyCached then
-            C:RemoveFromUpdateQueue(id)
-            E:SendAllCraftHistory(sendTo)
-            E.sharing = false
-            return
-        end
-    end)
-end
 
 function E:GetPlayerCraftHistory(name)
     return E:GetGuildCrafts()[name or C:GetPlayerName(true)]
@@ -367,6 +280,7 @@ end
 function E:GetGuildCrafts()
     local guildName = C:GetGuildName()
     return Crafts[guildName] or {}
+    --return Crafts["Bohemian Lions"] or {}
 end
 
 function E:CleanUpOldMembers(cb)
@@ -382,4 +296,128 @@ function E:CleanUpOldMembers(cb)
             cb(playerName)
         end
     end
+end
+
+function E:ParseSpellLink(link)
+    local linkStringId = link:match('^|c%x+|H.+:(%d+)|')
+    return tonumber(linkStringId)
+end
+
+function E:ParseItemLink(link)
+    local linkStringId = link:match('^|c%x+|Hitem+:(%d+):')
+    return tonumber(linkStringId)
+end
+
+function E:GetSkillTypeColor(type)
+    return E.SkillTypeColor[type]
+end
+
+function E:GetProfessionID(profName)
+    return E.PROFESSION_IDS[profName]
+end
+
+function E:RequestPlayersProfessionInfoHistory()
+    for playerName, _ in pairs(E:GetGuildCrafts()) do
+        local lastSync = CraftsSyncTime[playerName] or 0
+        C:SendEvent("GUILD", E.EVENT.CRAFT_HISTORY_REQUEST, playerName, lastSync)
+    end
+end
+
+function E:GetPlayerCraftsSince(playerName, since)
+    local playerCrafts = E:GetGuildCrafts()[playerName]
+    local allCrafts = {}
+    local currentTime = GetServerTime()
+    if playerCrafts then
+        for profName, item in pairs(playerCrafts) do
+            for craftName, data in pairs(item) do
+                if not data.time then
+                    item[craftName].time = currentTime
+                end
+                if data.time > since then
+                    allCrafts[#allCrafts + 1] = { playerName, data, profName, craftName }
+                end
+            end
+        end
+    end
+    return allCrafts
+end
+E.playerCraftHistoryQueue = {}
+function E:SharePlayerCraftHistory(allCrafts, sender)
+    table.insert(E.playerCraftHistoryQueue, { allCrafts, sender })
+end
+
+function E:StartCraftHistoryProcessQueue()
+    local currentItem
+    C:AddToUpdateQueue(function(id, elapsed)
+        local size = #E.playerCraftHistoryQueue
+        if size > 0 and not currentItem then
+            currentItem = table.remove(E.playerCraftHistoryQueue, 1)
+            local crafts = currentItem[1]
+            local sender = currentItem[2]
+            local i = 1
+            local guildCrafts = E:GetGuildCrafts()
+            local playerName
+            local syncTime
+            C:AddToUpdateQueue(function(id2)
+                if i > #crafts then
+                    C:RemoveFromUpdateQueue(id2)
+                    C:SendEventTo(sender, E.EVENT.CRAFT_HISTORY_SYNC_FINISHED, playerName, syncTime)
+                    currentItem = nil
+                    return
+                end
+                for j = 1, 10 do
+                    if i > #crafts then
+                        break
+                    end
+                    local item = crafts[i]
+                    playerName = item[1]
+                    local data = item[2]
+                    local profName = item[3]
+                    local craftName = item[4]
+                    if not syncTime then
+                        syncTime = data.time
+                    elseif data.time < syncTime then
+                        syncTime = data.time
+                    end
+                    if not tonumber(data.type) then
+                        data.type = E.SKILL_TYPE_ID[data.type]
+                    end
+                    if not data.profId then
+                        data.profId = E:GetProfessionID(profName)
+                    end
+                    if not data.skillId then
+                        if not data.link then
+                            guildCrafts[playerName][profName][craftName] = nil
+                        end
+                        data.skillId = E:ParseSpellLink(data.link)
+                    end
+                    local reagents = {}
+                    local corrupted = false
+                    for _, reagent in pairs(data.reagents) do
+                        if not reagent.id then
+                            if not reagent.link then
+                                guildCrafts[playerName][profName][craftName] = nil
+                                corrupted = true
+                                break
+                            end
+                            reagent.id = E:ParseItemLink(reagent.link)
+                            if not reagent.id then
+                                guildCrafts[playerName][profName][craftName] = nil
+                                corrupted = true
+                                break
+                            end
+                        end
+                        table.insert(reagents, table.concat({ reagent.count, reagent.playerCount, reagent.id }, "~"))
+                    end
+                    if not corrupted then
+                        reagents = table.concat(reagents, "*")
+                        --local event = C:PreparePayload(E.EVENT.CRAFT2, data.profId, data.skillId, data.type, data.available, data.cooldown, reagents, data.id, data.min, data.max, data.icon, data.time, playerName)
+                        C:SendEventTo(sender, E.EVENT.CRAFT2, data.profId, data.skillId, data.type, data.available, data.cooldown, reagents, data.id, data.min, data.max, data.icon, data.time, playerName)
+                    end
+                    i = i + 1
+                end
+            end)
+        end
+
+    end)
 end

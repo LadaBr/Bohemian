@@ -377,7 +377,7 @@ function E:UpdateCraftList()
                 isSelected = true
             end
             skillButton:SetNormalFontObject(button.font or skillButtonFont)
-            local fontColor = button.fontColor and button.fontColor or E.SkillTypeColor[button.type]
+            local fontColor = button.fontColor and button.fontColor or E:GetSkillTypeColor(button.type)
             local rightFontColor = button.rightFontColor and button.rightFontColor or { r = 0.95, g = 0.95, b = 0.95 }
             skillButtonFont:SetTextColor(fontColor.r,fontColor.g,fontColor.b)
             skillButtonTextRight:SetTextColor(rightFontColor.r,rightFontColor.g,rightFontColor.b)
@@ -576,7 +576,7 @@ function E:UpdateCraftListHighlight(i)
         GuildCraftListFrameHighlight:SetPoint("TOPLEFT", skillButton, "TOPLEFT", 0, 0);
         GuildCraftListFrameHighlight:SetWidth(skillButton:GetWidth())
         skillButton:LockHighlight()
-        local color = E.SkillTypeColor[button.type] or button.highlightColor
+        local color = E:GetSkillTypeColor(button.type) or button.highlightColor
         if color then
             GuildCraftListFrameHighlightTex:SetVertexColor(color.r, color.g, color.b, 1)
         end

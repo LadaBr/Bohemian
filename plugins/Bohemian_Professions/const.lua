@@ -74,8 +74,33 @@ E.PROFESSIONS_SPEC = {
 }
 
 E.SkillTypeColor = { };
-E.SkillTypeColor["optimal"]	= { r = 1.00, g = 0.50, b = 0.25, font = "GameFontNormalLeftOrange" };
-E.SkillTypeColor["medium"]	= { r = 1.00, g = 1.00, b = 0.00, font = "GameFontNormalLeftYellow" };
-E.SkillTypeColor["easy"]		= { r = 0.25, g = 0.75, b = 0.25, font = "GameFontNormalLeftLightGreen" };
-E.SkillTypeColor["trivial"]	= { r = 0.50, g = 0.50, b = 0.50, font = "GameFontNormalLeftGrey" };
+E.SkillTypeColor[4]	= { r = 1.00, g = 0.50, b = 0.25, font = "GameFontNormalLeftOrange" };
+E.SkillTypeColor[3]	= { r = 1.00, g = 1.00, b = 0.00, font = "GameFontNormalLeftYellow" };
+E.SkillTypeColor[2]		= { r = 0.25, g = 0.75, b = 0.25, font = "GameFontNormalLeftLightGreen" };
+E.SkillTypeColor[1]	= { r = 0.50, g = 0.50, b = 0.50, font = "GameFontNormalLeftGrey" };
+E.SkillTypeColor[5]	= { r = 1.00, g = 0.00, b = 0.00, font = "GameFontNormalLeftOrange" };
 E.SkillTypeColor["header"]	= { r = 1.00, g = 0.82, b = 0,    font = "GameFontNormalLeft" };
+
+E.PROFESSION_IDS = {
+    ["Cooking"] = 1,
+    ["Blacksmithing"] = 2,
+    ["Enchanting"] = 3,
+    ["Fishing"] = 4,
+    ["Tailoring"] = 5,
+    ["First Aid"] = 6,
+    ["Alchemy"] = 7,
+    ["Skinning"] = 8,
+    ["Herbalism"] = 9,
+    ["Engineering"] = 10,
+    ["Leatherworking"] = 11,
+    ["Jewelcrafting"] = 12,
+    ["Mining"] = 13,
+}
+
+E.SKILL_TYPE_ID = {
+    ["trivial"] = 1,
+    ["easy"] = 2,
+    ["medium"] = 3,
+    ["optimal"] = 4,
+    ["difficult"] = 5,
+}

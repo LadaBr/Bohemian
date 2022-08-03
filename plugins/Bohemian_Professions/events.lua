@@ -19,55 +19,89 @@ function A:CHAT_MSG_SKILL()
 end
 
 function A:READY()
-    if E:CanSync() then
-        E:RequestProfessionInfo()
-    end
+    E:RequestProfessionInfo()
 end
 
 function A:PROFESSION_INFO_REQUEST(sender)
-    if E:CanSync() then
-        E:ShareProfessions(sender)
-    end
+    E:ShareProfessions(sender)
 end
 
-function A:CRAFT(profName, craftName, craftType, numAvailable, icon, desc, cooldown, reagents, link, id, minMade, maxMade, sender)
-    if not reagents or not sender or not C.guildRoster[sender] then
+function A:CRAFT2(profId, skillId, craftTypeId, numAvailable, cooldown, reagents, id, minMade, maxMade, icon, time, sender)
+    if not reagents or not sender then
         return
     end
     local guildName = C:GetGuildName()
     local reagents_t = {}
-    desc = C:decodeBase64(desc)
+    profId = tonumber(profId)
+
+    local profName;
+    for name, id in pairs(E.PROFESSION_IDS) do
+        if profId == id then
+            profName = name
+            break
+        end
+    end
+    if not profName then
+        return
+    end
+    skillId = tonumber(skillId)
+    craftTypeId = tonumber(craftTypeId)
+    icon = tonumber(icon)
+    time = tonumber(time)
     reagents = { strsplit("*", reagents) }
     for _, reagent in pairs(reagents) do
-        local reagentTexture, reagentCount, playerReagentCount, reagentLink = strsplit("~", reagent)
-        table.insert(reagents_t, {
-            texture = tonumber(reagentTexture),
-            count = tonumber(reagentCount),
-            playerCount = tonumber(playerReagentCount),
-            link = reagentLink
-        })
+        local reagentCount, playerReagentCount, reagentId = strsplit("~", reagent)
+        reagentId = tonumber(reagentId)
+        local item = Item:CreateFromItemID(reagentId)
+
+        item:ContinueOnItemLoad(function()
+            local icon = item:GetItemIcon()
+            local link = item:GetItemLink()
+            table.insert(reagents_t, {
+                count = tonumber(reagentCount),
+                playerCount = tonumber(playerReagentCount),
+                id = tonumber(reagentId),
+                link = link,
+                texture = icon
+            })
+        end)
+
     end
-    if not Crafts[guildName] then
-        Crafts[guildName] = {}
-    end
-    if not Crafts[guildName][sender] then
-        Crafts[guildName][sender] = {}
-    end
-    if not Crafts[guildName][sender][profName] then
-        Crafts[guildName][sender][profName] = {}
-    end
-    Crafts[guildName][sender][profName][craftName] = {
-        available = tonumber(numAvailable),
-        icon = icon,
-        desc = desc,
-        type = craftType,
-        cooldown = tonumber(cooldown),
-        reagents = reagents_t,
-        link = link,
-        id = tonumber(id),
-        min = tonumber(minMade),
-        max = tonumber(maxMade),
-    }
+
+    local spell = Spell:CreateFromSpellID(skillId)
+
+    spell:ContinueOnSpellLoad(function()
+        local name = spell:GetSpellName()
+        local desc = spell:GetSpellDescription()
+        local link = GetSpellLink(spell:GetSpellID())
+        if not Crafts[guildName] then
+            Crafts[guildName] = {}
+        end
+        if not Crafts[guildName][sender] then
+            Crafts[guildName][sender] = {}
+        end
+        if not Crafts[guildName][sender][profName] then
+            Crafts[guildName][sender][profName] = {}
+        end
+        Crafts[guildName][sender][profName][name] = {
+            available = tonumber(numAvailable),
+            profId = profId,
+            skillId = skillId,
+            icon = icon,
+            desc = desc,
+            type = craftTypeId,
+            cooldown = tonumber(cooldown),
+            reagents = reagents_t,
+            link = link,
+            id = tonumber(id),
+            min = tonumber(minMade),
+            max = tonumber(maxMade),
+            time = time
+        }
+
+    end)
+
+
 end
 
 function A:PROFESSION_INFO(payload, sender)
@@ -128,29 +162,24 @@ function A:GUILD_MEMBER_COUNT_CHANGED(_, online)
     end
 end
 
-function A:CRAFT_HISTORY_REQUEST(sender)
-    if E:CanSync() then
-        E:ShareAllCraftHistory(sender)
-    end
-end
-
 E.onlineSince = {}
 function A:SYNC_DONE()
-    C:SendEvent("GUILD", "CRAFT_HISTORY_CHECK")
-    C_Timer.After(5, function()
-        local players = C:ProcessPlayersForSync(E.onlineSince)
-        E.onlineSince = {}
-        table.sort(players, function(a, b)
-            return a.onlineSince < b.onlineSince
-        end)
-        if #players > 0 then
-            C:SendEventTo(players[1].name, "CRAFT_HISTORY_REQUEST")
-        end
-        --for _, player in ipairs(players) do
-        --    -- TODO DATE
-        --    C:SendEventTo(player.name, "CRAFT_HISTORY_REQUEST")
-        --end
-    end)
+    E:RequestPlayersProfessionInfoHistory()
+    --C:SendEvent("GUILD", "CRAFT_HISTORY_CHECK")
+    --C_Timer.After(5, function()
+    --    local players = C:ProcessPlayersForSync(E.onlineSince)
+    --    E.onlineSince = {}
+    --    table.sort(players, function(a, b)
+    --        return a.onlineSince < b.onlineSince
+    --    end)
+    --    if #players > 0 then
+    --        C:SendEventTo(players[1].name, "CRAFT_HISTORY_REQUEST")
+    --    end
+    --    --for _, player in ipairs(players) do
+    --    --    -- TODO DATE
+    --    --    C:SendEventTo(player.name, "CRAFT_HISTORY_REQUEST")
+    --    --end
+    --end)
 end
 
 function A:CRAFT_HISTORY_CHECK(sender)
@@ -263,10 +292,32 @@ function A:PLAYER_ENTERING_WORLD(isLogin, isReload)
 end
 
 function A:CACHED_GUILD_DATA()
-    E:CleanUpOldMembers(function(oldMember)
-        E:GetGuildCrafts()[oldMember] = nil
-    end)
-    if E.isLogin and not E.isReload then
-        E:CacheCraftHistoryPayload()
+
+    if not E.onlyOnce then
+        E.onlyOnce = true
+        --E:CleanUpOldMembers(function(oldMember)
+        --    E:GetGuildCrafts()[oldMember] = nil
+        --end)
+
+    end
+
+end
+
+function A:CRAFT_HISTORY_REQUEST(playerName, lastSync, sender)
+    --if sender == C:GetPlayerName(true) then
+    --    return
+    --end
+    lastSync = tonumber(lastSync)
+    local unsyncCrafts = E:GetPlayerCraftsSince(playerName, lastSync)
+    if #unsyncCrafts > 0 then
+        E:SharePlayerCraftHistory(unsyncCrafts, sender)
+    end
+
+end
+
+function A:CRAFT_HISTORY_SYNC_FINISHED(playerName, syncTime)
+    syncTime = tonumber(syncTime)
+    if not CraftsSyncTime[playerName] or CraftsSyncTime[playerName] < syncTime then
+        CraftsSyncTime[playerName] = syncTime
     end
 end

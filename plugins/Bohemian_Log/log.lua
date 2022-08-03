@@ -540,6 +540,11 @@ end
 
 function E:SaveWipeData(fullName, time)
     time = tonumber(time)
+    if not CurrentDKPLog.current then
+        CurrentDKPLog.current = {
+            wipes = {}
+        }
+    end
     if not CurrentDKPLog.current.wipes[fullName] then
         CurrentDKPLog.current.wipes[fullName] = {}
     end
