@@ -44,6 +44,16 @@ function A:CRAFT2(profId, skillId, craftTypeId, numAvailable, cooldown, reagents
     if not profName then
         return
     end
+    local hasProfession = false
+    for _, profession in ipairs(E:GetPlayerProfessions(sender)) do
+        if (profession.name == profName) then
+            hasProfession = true
+            break
+        end
+    end
+    if not hasProfession then
+        return
+    end
     skillId = tonumber(skillId)
     craftTypeId = tonumber(craftTypeId)
     icon = tonumber(icon)
@@ -123,6 +133,7 @@ function A:PROFESSION_INFO(payload, sender)
             return a.order < b.order
         end)
         Professions[sender] = tmp
+        E:CheckPlayerProfessionHistoryValidity(sender)
     end
 end
 
@@ -298,7 +309,6 @@ function A:CACHED_GUILD_DATA()
         --E:CleanUpOldMembers(function(oldMember)
         --    E:GetGuildCrafts()[oldMember] = nil
         --end)
-
     end
 
 end

@@ -238,7 +238,6 @@ function E:ShareTradeSkillsDelayed()
     self:ShareTradeSkills()
 end
 
-
 function E:GetPlayerCraftHistory(name)
     return E:GetGuildCrafts()[name or C:GetPlayerName(true)]
 end
@@ -420,4 +419,22 @@ function E:StartCraftHistoryProcessQueue()
         end
 
     end)
+end
+
+function E:CheckPlayerProfessionHistoryValidity(playerName)
+    local playerCrafts = E:GetGuildCrafts()[playerName]
+    if playerCrafts then
+        for profHistoryName, _ in pairs(playerCrafts) do
+            local exists = false
+            for _, prof in ipairs(Professions[playerName]) do
+                if profHistoryName == prof.name then
+                    exists = true
+                    break
+                end
+            end
+            if not exists then
+                playerCrafts[profHistoryName] = nil
+            end
+        end
+    end
 end
