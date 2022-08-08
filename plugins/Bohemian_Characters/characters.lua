@@ -21,6 +21,10 @@ if not RosterCharacters then
     RosterCharacters = {}
 end
 
+if not Bohemian_Characters then
+    Bohemian_Characters = {}
+end
+
 function E:SaveCharacterInfo()
     E:Debug("Saved character info")
     local realm = GetNormalizedRealmName()
@@ -31,14 +35,14 @@ function E:SaveCharacterInfo()
         AccountData.characters[realm] = {}
     end
 
-    local guildName, guildRankName, guildRankIndex  = GetGuildInfo("player")
+    local guildName, guildRankName, guildRankIndex = GetGuildInfo("player")
     if not guildName then
         return
     end
     if not AccountData.characters[realm][guildName] then
         AccountData.characters[realm][guildName] = {}
     end
-    AccountData.characters[realm][guildName][C:GetPlayerName(true)] = {rank = guildRankName, rankIndex = guildRankIndex}
+    AccountData.characters[realm][guildName][C:GetPlayerName(true)] = { rank = guildRankName, rankIndex = guildRankIndex }
 end
 function E:GetMainCharacter(characters)
     local mainChar
@@ -60,7 +64,7 @@ function E:GetMainCharacter(characters)
 
 end
 function E:IsPlayerAlt()
-    local _, guildRankName, _  = GetGuildInfo("player")
+    local _, guildRankName, _ = GetGuildInfo("player")
     if guildRankName == "Alt" or not self:IsPlayerMain() then
         return true
     end
@@ -94,7 +98,6 @@ function E:RequestCharactersInfoFrom(player)
     C:SendEventTo(player, self.EVENT.CHARACTERS_INFO_REQUEST)
 end
 
-
 function E:GetCharacters()
     local realm = GetNormalizedRealmName()
     local guildName = GetGuildInfo("player")
@@ -127,7 +130,7 @@ function E:GetGuildMemberCharactersDataTooltip(fullName)
     if RosterCharacters[fullName] then
         for _, name in ipairs(RosterCharacters[fullName]) do
             if self.guildRoster[fullName] then
-                tmp[#tmp + 1] = strsplit("-", name).." - "..self.guildRoster[name][2]
+                tmp[#tmp + 1] = strsplit("-", name) .. " - " .. self.guildRoster[name][2]
             end
         end
     end
@@ -138,4 +141,29 @@ function E:IsMemberAlt(name)
         return true
     end
     return false
+end
+
+function E:CompareRosters(roster1, roster2)
+    local missing = {}
+    for _, data in ipairs(roster1) do
+        local exists = false
+        for _, data2 in ipairs(roster2) do
+            if data[1] == data2[1] then
+                exists = true
+                break
+            end
+        end
+        if not exists then
+            table.insert(missing, data)
+        end
+    end
+    return missing
+end
+
+function E:GetPrettyPlayers(players)
+    local parsed = {}
+    for _, data in ipairs(players) do
+        table.insert(parsed, C:AddClassFileNameColorToName(data[11], data[1]) .. " " .. data[4])
+    end
+    return parsed
 end

@@ -2,7 +2,7 @@
 ## Title: |cFF4068E0|| - |rCharacters
 ## Author: Elerae-Golemagg
 ## Version: 1.0.0
-## SavedVariables: AccountData
+## SavedVariables: AccountData, Bohemian_Characters
 ## Dependencies: Bohemian
 ## LoadOnDemand: 0
 

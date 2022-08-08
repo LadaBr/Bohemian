@@ -37,7 +37,28 @@ end
 
 function E:GetClassColor(name)
     local classFileName = self:GetClassFileName(name)
+    return E:GetClassFileNameColor(classFileName)
+end
+
+function E:GetClassFileNameColor(classFileName)
     return RAID_CLASS_COLORS[classFileName]
+end
+
+function E:AddClassColor(color, name)
+    if color then
+        local escapeColor = format("|cff%02x%02x%02x", color.r*255, color.g*255, color.b*255)
+        name = escapeColor..name.."|r"
+    end
+    return name
+end
+
+function E:AddClassFileNameColorToName(classFileName, name)
+    local color = E:GetClassFileNameColor(classFileName)
+    if color then
+        local escapeColor = format("|cff%02x%02x%02x", color.r*255, color.g*255, color.b*255)
+        name = escapeColor..name.."|r"
+    end
+    return name
 end
 
 function E:AddClassColorToName(name)
@@ -46,11 +67,7 @@ function E:AddClassColorToName(name)
     end
     local shortName = strsplit("-", name)
     local color = self:GetClassColor(name)
-    if color then
-        local escapeColor = format("|cff%02x%02x%02x", color.r*255, color.g*255, color.b*255)
-        shortName = escapeColor..shortName.."|r"
-    end
-    return shortName
+    return E:AddClassColor(color, shortName)
 end
 
 function E:IsPlayerOnline(name)

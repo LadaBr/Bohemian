@@ -113,7 +113,7 @@ end
 
 function A:START_SYNC_LOG(players)
     if #players == 0 then
-        E:Print("Log is already synced.")
+        E:Debug("Log is already synced.")
         E:FinishLogSync()
         return
     end
