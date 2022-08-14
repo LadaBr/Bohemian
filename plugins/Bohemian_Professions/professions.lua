@@ -316,7 +316,7 @@ function E:GetProfessionID(profName)
 end
 
 function E:RequestPlayersProfessionInfoHistory()
-    for playerName, _ in pairs(E:GetGuildCrafts()) do
+    for playerName, _ in pairs(C.guildRoster) do
         local lastSync = CraftsSyncTime[playerName] or 0
         C:SendEvent("GUILD", E.EVENT.CRAFT_HISTORY_REQUEST, playerName, lastSync)
     end

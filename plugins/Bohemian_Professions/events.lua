@@ -314,10 +314,11 @@ function A:CACHED_GUILD_DATA()
 end
 
 function A:CRAFT_HISTORY_REQUEST(playerName, lastSync, sender)
-    --if sender == C:GetPlayerName(true) then
-    --    return
-    --end
+    if sender == C:GetPlayerName(true) then
+        return
+    end
     lastSync = tonumber(lastSync)
+
     local unsyncCrafts = E:GetPlayerCraftsSince(playerName, lastSync)
     if #unsyncCrafts > 0 then
         E:SharePlayerCraftHistory(unsyncCrafts, sender)
