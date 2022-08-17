@@ -55,22 +55,6 @@ function A:GUILD_MEMBER_COUNT_CHANGED(_, online)
 end
 
 function A:CACHED_GUILD_DATA()
-    local roster = {}
-    for _, data in pairs(C.guildRoster) do
-        table.insert(roster, data)
-    end
-    if #Bohemian_Characters > 0 then
-        local left = E:CompareRosters(Bohemian_Characters, roster)
-        local joined = E:CompareRosters(roster, Bohemian_Characters)
-        if #left > 0 then
-            local parsed = E:GetPrettyPlayers(left)
-            E:Print("Players left the guild: " .. table.concat(parsed, ", "))
-        end
-        if #joined > 0 then
-            local parsed = E:GetPrettyPlayers(joined)
-            E:Print("Players joined the guild: " .. table.concat(parsed, ", "))
-        end
-    end
-
-    Bohemian_Characters = roster
+    E.cacheCooldown = 1
+    E.checkRoster = true
 end

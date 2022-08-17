@@ -13,6 +13,7 @@ local AddonName, E = ...
 
 Bohemian.RegisterModule(AddonName, E, function()
     E:AdjustGuildFrameButtons()
+    E:StartRosterChangeDetection()
 end)
 
 local C = E.CORE
@@ -143,9 +144,18 @@ function E:IsMemberAlt(name)
     return false
 end
 
-function E:CompareRosters(roster1, roster2)
+function E:CompareRosters(roster1, roster2, cb)
     local missing = {}
-    for _, data in ipairs(roster1) do
+    local i = 1
+    local data
+    C:AddToUpdateQueue(function(id)
+        if i > #roster1 then
+            C:RemoveFromUpdateQueue(id)
+            cb(missing)
+            return
+        end
+        data = roster1[i]
+
         local exists = false
         for _, data2 in ipairs(roster2) do
             if data[1] == data2[1] then
@@ -156,8 +166,8 @@ function E:CompareRosters(roster1, roster2)
         if not exists then
             table.insert(missing, data)
         end
-    end
-    return missing
+        i = i + 1
+    end)
 end
 
 function E:GetPrettyPlayers(players)
@@ -166,4 +176,34 @@ function E:GetPrettyPlayers(players)
         table.insert(parsed, C:AddClassFileNameColorToName(data[11], data[1]) .. " " .. data[4])
     end
     return parsed
+end
+
+function E:StartRosterChangeDetection()
+    C:AddToUpdateQueue(function(id, elapsed)
+        if E.checkRoster and E.cacheCooldown <= 0 then
+            E.checkRoster = false
+            local roster = {}
+            for _, data in pairs(C.guildRoster) do
+                table.insert(roster, data)
+            end
+            if #Bohemian_Characters > 0 then
+                E:CompareRosters(Bohemian_Characters, roster, function(left)
+                    if #left > 0 then
+                        local parsed = E:GetPrettyPlayers(left)
+                        E:Print("Players left the guild: " .. table.concat(parsed, ", "))
+                    end
+                end)
+                E:CompareRosters(roster, Bohemian_Characters, function(joined)
+                    if #joined > 0 then
+                        local parsed = E:GetPrettyPlayers(joined)
+                        E:Print("Players joined the guild: " .. table.concat(parsed, ", "))
+                    end
+                end)
+            end
+            Bohemian_Characters = roster
+        end
+        if E.cacheCooldown > 0 then
+            E.cacheCooldown = E.cacheCooldown - elapsed
+        end
+    end)
 end

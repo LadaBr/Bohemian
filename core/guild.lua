@@ -44,18 +44,22 @@ function E:CacheGuildRoster()
     end
     self.guildRoster = newRoster
     local wentOffline = {}
+    local offlineCount = 0
     for name, data in pairs(E.onlinePlayers) do
         if not newOnlinePlayers[name] then
             wentOffline[name] = data
+            offlineCount = offlineCount + 1
         end
     end
     local wentOnline = {}
+    local onlineCount = 0
     for name, data in pairs(newOnlinePlayers) do
         if not E.onlinePlayers[name] then
             wentOnline[name] = data
+            onlineCount = onlineCount + 1
         end
     end
-    if E.firstLoad then
+    if E.firstLoad and (onlineCount > 0 or offlineCount > 0) then
         self:OnEvent(E.EVENT.GUILD_MEMBER_COUNT_CHANGED, wentOffline, wentOnline)
     end
     self.onlinePlayers = newOnlinePlayers
