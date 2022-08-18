@@ -16,6 +16,7 @@ E.AVAILABLE_MODULES = {
     "Bohemian_Raid",
     "Bohemian_Talents",
     "Bohemian_ElvUI",
+    "Bohemian_Reputation",
 }
 
 E.STRING = {

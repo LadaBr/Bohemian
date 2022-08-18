@@ -1,0 +1,11 @@
+## Interface: 20503
+## Title: |cFF4068E0|| - |rReputation
+## Author: Elerae-Golemagg
+## Version: 1.0.0
+## SavedVariables: Bohemian_Reputation
+## Dependencies: Bohemian, Bohemian_Characters
+## LoadOnDemand: 0
+
+reputation.lua
+ui.lua
+events.lua
