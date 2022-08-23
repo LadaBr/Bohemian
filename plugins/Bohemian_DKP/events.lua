@@ -68,6 +68,13 @@ function A:CACHED_GUILD_DATA()
     E:ProcessQueue()
 end
 
+function A:ADDON_LOADED(name)
+    if name == "Blizzard_RaidUI" then
+        E.raidUILoaded = true
+        E:AdjustRaidFrame()
+    end
+end
+
 function A:GROUP_ROSTER_UPDATE()
     E:UpdateAwardDKPButton()
 end

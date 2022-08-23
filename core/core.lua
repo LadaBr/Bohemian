@@ -165,6 +165,7 @@ function E:LoadModules()
             E:GuildStatus_UpdateHook()
         end
     end
+    E:OnEvent("MODULES_LOADED")
 end
 
 function E:GetModule(name)

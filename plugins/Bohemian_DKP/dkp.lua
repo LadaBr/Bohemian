@@ -167,6 +167,10 @@ function E:SubtractDKPFromEditBox(editBox)
 end
 
 function E:AdjustRaidFrame()
+    if not E.raidUILoaded or E.raidFrameAdjusted then
+        return
+    end
+    E.raidFrameAdjusted = true
     local awardRaid = C:CreateFrame("Button", "ButtonAwardRaidDKP", RaidFrame, "UIPanelButtonTemplate")
     awardRaid:SetPoint("RIGHT", RaidFrameReadyCheckButton, "LEFT", -2, 0)
     awardRaid:SetSize(90, 21)
