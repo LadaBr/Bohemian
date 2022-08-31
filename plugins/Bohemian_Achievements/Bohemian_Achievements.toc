@@ -1,0 +1,11 @@
+## Interface: 20503
+## Title: |cFF4068E0|| - |rAchievements
+## Author: Elerae-Golemagg
+## Version: 1.0.0
+## SavedVariables: Bohemian_Achievements
+## Dependencies: Bohemian
+## LoadOnDemand: 0
+
+achievements.lua
+ui.lua
+events.lua
