@@ -28,6 +28,7 @@ end
 function A:ACHIEVEMENT_EARNED(id)
     local link = GetAchievementLink(id)
     SendChatMessage(format("has earned the achievement %s!", link), "GUILD")
+    PlaySound(12891)
     --if IsInRaid() then
     --    SendChatMessage(format("has earned the achievement %s!", link), "RAID")
     --elseif IsInGroup() then
