@@ -52,4 +52,9 @@ E.TALENTS = {
         Fury = 132347,
         Protection = 134952,
     },
+    DEATHKNIGHT = {
+        Blood = 135770,
+        Frost = 135773,
+        Unholy = 135775,
+    },
 }

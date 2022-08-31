@@ -8,7 +8,7 @@ function E:CreateGuildFrameTalentsButtons()
     for i=1, GUILDMEMBERS_TO_DISPLAY do
         local specContainer = C:CreateFrame("Frame", "GuildFrameSpecContainer"..i, _G["GuildFrameButton"..i])
         specContainer:SetSize(15,15)
-        specContainer:SetPoint("RIGHT", "GuildFrameButton"..i.."Class", "RIGHT", 0, 0)
+        specContainer:SetPoint("RIGHT", "GuildFrameButton"..i.."Class", "RIGHT", 2, 0)
         local spec = specContainer:CreateTexture("$parentSpecIcon", "ARTWORK")
         spec:SetAllPoints(specContainer)
         C:AddTooltip(specContainer, "ANCHOR_TOP")

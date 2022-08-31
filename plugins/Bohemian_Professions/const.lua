@@ -34,6 +34,7 @@ E.PROFESSIONS = {
     ["Leatherworking"] = 0,
     ["Jewelcrafting"] = 1,
     ["Mining"] = 2,
+    ["Inscription"] = 0,
 }
 E.SECONDARY_PROFESSIONS = {
     ["Cooking"] = true,
@@ -95,6 +96,7 @@ E.PROFESSION_IDS = {
     ["Leatherworking"] = 11,
     ["Jewelcrafting"] = 12,
     ["Mining"] = 13,
+    ["Inscription"] = 14
 }
 
 E.SKILL_TYPE_ID = {
