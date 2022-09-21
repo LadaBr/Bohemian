@@ -216,7 +216,6 @@ function E:SetDifficultyBossRewards(difficulty, value)
     Bohemian_DKPConfig.bossRewards[difficulty] = value
 end
 
-
 function E:GetSelectedDifficultyBossRewards()
     return Bohemian_DKPConfig.bossRewards[Bohemian_DKPConfig.selectedDifficulty]
 end
@@ -225,6 +224,10 @@ function E:SetSelectedDifficultyBossRewards(value)
     Bohemian_DKPConfig.bossRewards[Bohemian_DKPConfig.selectedDifficulty] = value
 end
 
-function E:GetCurrentBossRewards()
-
+function E:GetCurrentBossRewards(bossName)
+    local _, _, difficulty = GetInstanceInfo()
+    local config = E:GetDifficultyBossRewards(difficulty) or {}
+    local defaultConfig = E:GetDifficultyBossRewards(0) or {}
+    local reward = (config and config[bossName]) or (defaultConfig and E:GetDifficultyBossRewards(0)[bossName])
+    return reward
 end

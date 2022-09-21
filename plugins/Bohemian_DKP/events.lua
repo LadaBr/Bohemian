@@ -10,6 +10,7 @@ local A = E.EVENTS
 
 E.CORE:RegisterEvent('GROUP_ROSTER_UPDATE')
 E.CORE:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
+E.CORE:RegisterEvent('ENCOUNTER_END')
 
 function A:COMBAT_LOG_EVENT_UNFILTERED()
     local _, eventType, _, _, _, _, _, _, destName, _, _, recapID, _ = CombatLogGetCurrentEventInfo()
@@ -17,13 +18,17 @@ function A:COMBAT_LOG_EVENT_UNFILTERED()
         if not IsInRaid() or not UnitIsGroupLeader("player") then
             return
         end
-        local _, _, difficulty = GetInstanceInfo()
-        local config = E:GetDifficultyBossRewards(difficulty) or {}
-        local defaultConfig = E:GetDifficultyBossRewards(0) or {}
-        local reward = (config and config[destName]) or (defaultConfig and E:GetDifficultyBossRewards(0)[destName])
+        local reward = E:GetCurrentBossRewards(destName)
         if reward then
-            E:AwardDKPRaid(config[destName], "killing of " .. destName)
+            E:AwardDKPRaid(reward, "killing of " .. destName)
         end
+    end
+end
+
+function A:ENCOUNTER_END(encounterID, encounterName, difficultyID, groupSize, success)
+    local reward = E:GetCurrentBossRewards(encounterName)
+    if reward then
+        E:AwardDKPRaid(reward, "killing of " .. destName)
     end
 end
 
