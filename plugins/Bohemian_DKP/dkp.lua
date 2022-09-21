@@ -38,6 +38,7 @@ function E:LoadDefaults()
     end
     Bohemian_DKPConfig.showDKP = Bohemian_DKPConfig.showDKP == nil and true or Bohemian_DKPConfig.showDKP
     Bohemian_DKPConfig.bossRewards = Bohemian_DKPConfig.bossRewards or {}
+    Bohemian_DKPConfig.selectedDifficulty = Bohemian_DKPConfig.selectedDifficulty or 1
     Bohemian_DKPConfig.startingDKP = Bohemian_DKPConfig.startingDKP or 100
 end
 
@@ -205,4 +206,25 @@ function E:SetInitialDKPDelayed(fullName)
     if not E.roster[fullName] then
         E:SetInitialDKP(fullName)
     end
+end
+
+function E:GetDifficultyBossRewards(difficulty)
+    return Bohemian_DKPConfig.bossRewards[difficulty] or {}
+end
+
+function E:SetDifficultyBossRewards(difficulty, value)
+    Bohemian_DKPConfig.bossRewards[difficulty] = value
+end
+
+
+function E:GetSelectedDifficultyBossRewards()
+    return Bohemian_DKPConfig.bossRewards[Bohemian_DKPConfig.selectedDifficulty]
+end
+
+function E:SetSelectedDifficultyBossRewards(value)
+    Bohemian_DKPConfig.bossRewards[Bohemian_DKPConfig.selectedDifficulty] = value
+end
+
+function E:GetCurrentBossRewards()
+
 end

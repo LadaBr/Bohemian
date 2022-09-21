@@ -17,8 +17,12 @@ function A:COMBAT_LOG_EVENT_UNFILTERED()
         if not IsInRaid() or not UnitIsGroupLeader("player") then
             return
         end
-        if Bohemian_DKPConfig.bossRewards[destName] then
-            E:AwardDKPRaid(Bohemian_DKPConfig.bossRewards[destName], "killing of "..destName)
+        local _, _, difficulty = GetInstanceInfo()
+        local config = E:GetDifficultyBossRewards(difficulty) or {}
+        local defaultConfig = E:GetDifficultyBossRewards(0) or {}
+        local reward = (config and config[destName]) or (defaultConfig and E:GetDifficultyBossRewards(0)[destName])
+        if reward then
+            E:AwardDKPRaid(config[destName], "killing of " .. destName)
         end
     end
 end
@@ -85,14 +89,14 @@ end
 
 function A:UPDATE_GUILD_MEMBER(row, i, numMembers, fullName, rank, rankIndex, level, class, zone, note, officerNote, online, isAway, classFileName)
     if i <= numMembers then
-        _G["GuildFrameGuildStatusButton"..row.."OfficerNote"]:SetText(officerNote)
+        _G["GuildFrameGuildStatusButton" .. row .. "OfficerNote"]:SetText(officerNote)
         E:RefreshDKPColumn(row, note, online)
     else
-        _G["GuildFrameGuildStatusButton"..row.."OfficerNote"]:SetText("")
-        _G["GuildFrameGuildStatusButton"..row.."Note"]:SetText("")
+        _G["GuildFrameGuildStatusButton" .. row .. "OfficerNote"]:SetText("")
+        _G["GuildFrameGuildStatusButton" .. row .. "Note"]:SetText("")
     end
 
-    local dkpCheckButton = _G["GuildFrameDKPSelectButton"..row]
+    local dkpCheckButton = _G["GuildFrameDKPSelectButton" .. row]
     if E.isEditMode and Bohemian_DKPConfig.showDKP then
         if i <= numMembers then
             dkpCheckButton:Show()
