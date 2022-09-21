@@ -11,11 +11,12 @@ local A = E.EVENTS
 E.CORE:RegisterEvent('GROUP_ROSTER_UPDATE')
 E.CORE:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 E.CORE:RegisterEvent('ENCOUNTER_END')
+E.CORE:RegisterEvent('ENCOUNTER_START')
 
 function A:COMBAT_LOG_EVENT_UNFILTERED()
     local _, eventType, _, _, _, _, _, _, destName, _, _, recapID, _ = CombatLogGetCurrentEventInfo()
     if eventType == "UNIT_DIED" or eventType == "UNIT_DESTROYED" or eventType == "UNIT_DISSIPATES" then
-        if not IsInRaid() or not UnitIsGroupLeader("player") then
+        if not IsInRaid() or not UnitIsGroupLeader("player") or E.isEncounterInProgress then
             return
         end
         local reward = E:GetCurrentBossRewards(destName)
@@ -26,10 +27,18 @@ function A:COMBAT_LOG_EVENT_UNFILTERED()
 end
 
 function A:ENCOUNTER_END(encounterID, encounterName, difficultyID, groupSize, success)
+    E.isEncounterInProgress = false
+    if not success then
+        return
+    end
     local reward = E:GetCurrentBossRewards(encounterName)
     if reward then
-        E:AwardDKPRaid(reward, "killing of " .. destName)
+        E:AwardDKPRaid(reward, "killing of " .. encounterName)
     end
+end
+
+function A:ENCOUNTER_START()
+    E.isEncounterInProgress = true
 end
 
 function A:GUILD_FRAME_UPDATE()
