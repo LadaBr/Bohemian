@@ -17,6 +17,7 @@ Bohemian.RegisterModule(AddonName, E, function()
 end)
 
 local C = E.CORE
+E.cacheCooldown = 0
 
 if not RosterCharacters then
     RosterCharacters = {}
@@ -102,6 +103,9 @@ end
 function E:GetCharacters()
     local realm = GetNormalizedRealmName()
     local guildName = GetGuildInfo("player")
+    if not AccountData.characters[realm] then
+        return
+    end
     return AccountData.characters[realm][guildName]
 end
 function E:GetGuildMemberCharactersData(fullName)

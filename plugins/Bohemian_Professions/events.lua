@@ -138,10 +138,18 @@ function A:PROFESSION_INFO(payload, sender)
 end
 
 function A:CRAFT_UPDATE(...)
+    local linked = IsTradeSkillLinked()
+    if linked then
+        return
+    end
     E:ShareCraftsDelayed()
 end
 
 function A:TRADE_SKILL_UPDATE(...)
+    local linked = IsTradeSkillLinked()
+    if linked then
+        return
+    end
     E:ShareTradeSkillsDelayed()
 end
 
