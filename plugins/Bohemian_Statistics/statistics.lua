@@ -46,10 +46,11 @@ function E:ShareStats(sendTo)
         rep = module:GetPlayerReputation(C:GetPlayerName(true)).total or 0
     end
     table.insert(payload, rep)
+    --print("SHARING STATS", sendTo)
     if sendTo then
         C:SendEventTo(sendTo, E.EVENT.STATS, unpack(payload))
     else
-        C:SendEvent(E.EVENT.STATS, unpack(payload))
+        C:SendEvent("GUILD", E.EVENT.STATS, unpack(payload))
     end
 
 end

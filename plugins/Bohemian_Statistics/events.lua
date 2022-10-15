@@ -20,6 +20,7 @@ C:RegisterEvent('PVP_RATED_STATS_UPDATE')
 
 function A:READY()
     E:RequestStats()
+    --E:ShareStats()
 end
 
 function A:GUILD_FRAME_BEFORE_UPDATE()
@@ -87,6 +88,7 @@ end
 
 
 function A:STATS(achievementPoints, hk, rat2v2, rat3v3, rat5v5, rep, sender)
+    --print(achievementPoints, hk, rat2v2, rat3v3, rat5v5, rep, sender)
     Bohemian_Statistics.players[sender] = {
         achievement = tonumber(achievementPoints),
         hk = tonumber(hk),
@@ -98,7 +100,9 @@ function A:STATS(achievementPoints, hk, rat2v2, rat3v3, rat5v5, rep, sender)
 end
 
 function A:REQUEST_STATS(sender)
-    print("REQUESTED STATS")
+    if sender == C:GetPlayerName(true) then
+        return
+    end
     E:ShareStats(sender)
 end
 

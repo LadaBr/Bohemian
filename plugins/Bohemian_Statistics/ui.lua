@@ -87,7 +87,7 @@ function E:CreateStatisticsFrame()
         repHeaderTexture:SetTexture("Interface\\ICONS\\achievement_reputation_01")
         repHeaderTexture:SetPoint("CENTER", 0, -2)
         repHeaderTexture:SetScale(0.25);
-        WhoFrameColumn_SetWidth(repHeader, 60);
+        WhoFrameColumn_SetWidth(repHeader, 30);
         repHeader.sortType = "rep";
     end
 
@@ -139,7 +139,7 @@ function E:CreateStatisticsFrame()
 
         local repCol = statisticsRow:CreateFontString("$parentRep", "BORDER", "GameFontHighlightSmall")
         repCol:SetJustifyH("RIGHT")
-        repCol:SetSize(60, 14)
+        repCol:SetSize(26, 14)
         repCol:SetPoint("LEFT", arena5v5Col, "RIGHT", 0, 0)
     end
 end
@@ -211,13 +211,15 @@ function E:UpdateSelectedListFrame()
         GuildPlayerStatusFrame:Hide()
         GuildStatusFrame:Hide()
         GuildFrameStatisticsFrame:Show()
+        C:RenderGuildFrame(GuildFrameStatisticsFrame)
+        E.customListActive = true
         C:AddToUpdateQueue(function(id)
             C:RemoveFromUpdateQueue(id)
             GuildPlayerStatusFrame:Hide()
             GuildStatusFrame:Hide()
             GuildFrameStatisticsFrame:Show()
-            C:RenderGuildFrame(GuildFrameStatisticsFrame)
-            E.customListActive = true
+
+
         end)
     end
 end
@@ -240,12 +242,12 @@ function E:UpdateStatisticRows()
             local rep = _G["GuildFrameStatisticsFrameRow"..i.."Rep"]
             row:Show()
             nameCol:SetText(C:AddClassColorToName(member.name))
-            achievementCol:SetText(member.achievement)
-            hkCol:SetText(member.hk)
-            arena2v2:SetText(member.arena2v2)
-            arena3v3:SetText(member.arena3v3)
-            arena5v5:SetText(member.arena5v5)
-            rep:SetText(member.rep)
+            achievementCol:SetText(member.achievement > 0 and member.achievement or "-")
+            hkCol:SetText(member.hk > 0 and member.hk or "-")
+            arena2v2:SetText(member.arena2v2 > 0 and member.arena2v2 or "-")
+            arena3v3:SetText(member.arena3v3 > 0 and member.arena3v3  or "-")
+            arena5v5:SetText(member.arena5v5 > 0 and member.arena5v5  or "-")
+            rep:SetText(member.rep > 0 and member.rep or "-")
             if member.online then
                 nameCol:SetAlpha(1)
             else

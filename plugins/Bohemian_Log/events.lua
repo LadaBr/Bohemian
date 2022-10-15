@@ -49,9 +49,21 @@ function A:SYNC_LOG(since, sender)
     if sender == C:GetPlayerName(true) then
         return
     end
-    E:LogToChunks(since, function(id, data)
-        C:SendEventTo(sender, C.EVENT.PAYLOAD_START, "SYNC_LOG", #data, id)
-    end)
+    if not E.logLoaded then
+        C:AddToUpdateQueue(function(id)
+            if E.logLoaded then
+                C:RemoveFromUpdateQueue(id)
+                E:LogToChunks(since, function(id, data)
+                    C:SendEventTo(sender, C.EVENT.PAYLOAD_START, "SYNC_LOG", #data, id)
+                end)
+            end
+        end)
+    else
+        E:LogToChunks(since, function(id, data)
+            C:SendEventTo(sender, C.EVENT.PAYLOAD_START, "SYNC_LOG", #data, id)
+        end)
+    end
+
 end
 
 function A:DKP_CHANGED(time, fullName, prevValue, value, reason, editor)
