@@ -55,6 +55,10 @@ end
 
 function E:GetCurrentPlayerReputation()
     local fullName = GetGuildRosterInfo(GetGuildRosterSelection());
+    return E:GetPlayerReputation(fullName)
+end
+
+function E:GetPlayerReputation(fullName)
     return Bohemian_Reputation.shared[fullName] or {}
 end
 
@@ -97,5 +101,8 @@ end
 function E:IsMyCharacter()
     local fullName = GetGuildRosterInfo(GetGuildRosterSelection());
     local characters = E:GetMyCharacters()
+    if not characters then
+        return false
+    end
     return characters[fullName] ~= nil
 end

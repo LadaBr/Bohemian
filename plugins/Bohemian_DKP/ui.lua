@@ -329,7 +329,7 @@ end
 
 function E:ReplaceGuildFrameGuildStatusNoteHeaderWithDKP()
     local noteBtn = _G["GuildFrameGuildStatusColumnHeader3"]
-    noteBtn:SetParent(GuildFrame)
+    noteBtn:SetParent(GuildPlayerStatusFrame)
     noteBtn:SetText("DKP")
     WhoFrameColumn_SetWidth(noteBtn, GUILD_FRAME_COLUMN_WIDTH_DKP)
     C:SwapColumnBetween("GuildFrameGuildStatusColumnHeader3", C.GuildStatusHeaderOrder, C.GuildHeaderOrder)
@@ -375,13 +375,16 @@ function E:CreateDKPCheckButton(index)
 end
 function E:ReplaceGuildFrameGuildStatusNoteWithDKP(index)
     local noteButton = _G["GuildFrameGuildStatusButton" .. index .. "Note"]
-    noteButton:SetParent(GuildFrame)
+    local frame = FriendsFrame.playerStatusFrame and GuildPlayerStatusFrame or GuildStatusFrame
+    noteButton:SetParent(frame)
     noteButton:SetJustifyH("RIGHT")
     --noteButton:SetPoint("LEFT", "GuildFrameProf"..index.."Frame"..PROFESSION_AMOUNT, "RIGHT", -2, 0)
 end
 
 function E:UpdateColumnAfterUpdate()
-
+    for i = 1, GUILDMEMBERS_TO_DISPLAY do
+        E:ReplaceGuildFrameGuildStatusNoteWithDKP(i)
+    end
     WhoFrameColumn_SetWidth(GuildFrameGuildStatusColumnHeader5, E:GetNoteColumnWidth())
     WhoFrameColumn_SetWidth(GuildFrameGuildStatusColumnHeader3, GUILD_FRAME_COLUMN_WIDTH_DKP)
 end
@@ -771,6 +774,9 @@ function E:ShowBossRewardEditBox(frameName, difficulty)
         editBox.editbox:Hide()
     end
     local editBox = E:GetBossRewardEditBox(frameName, difficulty)
+    if not editBox then
+        return
+    end
     editBox:Show()
     editBox.scroll:Show()
     editBox.editbox:Show()

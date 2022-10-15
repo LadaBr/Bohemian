@@ -78,8 +78,8 @@ function E:AdjustGuildFrameControlButtons()
     end)
 end
 
-function E:RenderGuildFrame()
-    local width = E:GetChildrenHeaderWidth(FriendsFrame.playerStatusFrame and GuildPlayerStatusFrame or GuildStatusFrame) + GUILD_FRAME_PADDING_RIGHT
+function E:RenderGuildFrame(frame)
+    local width = E:GetChildrenHeaderWidth(frame) + GUILD_FRAME_PADDING_RIGHT
     width = width + E.GUILD_FRAME_ADDITIONAL_WIDTH
     local tabIndex = PanelTemplates_GetSelectedTab(FriendsFrame)
     if tabIndex == 3 then

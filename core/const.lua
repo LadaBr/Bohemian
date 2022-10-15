@@ -18,6 +18,7 @@ E.AVAILABLE_MODULES = {
     "Bohemian_ElvUI",
     "Bohemian_Reputation",
     "Bohemian_Achievements",
+    "Bohemian_Statistics",
 }
 
 E.STRING = {

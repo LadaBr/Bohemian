@@ -215,14 +215,11 @@ function A:GUILD_FRAME_UPDATE()
 end
 
 function A:GUILD_FRAME_AFTER_UPDATE()
-    --print(GuildFrameColumnHeader2:GetWidth())
-
     E:SetGuildStatusColumnWidth()
     E:RenderGuildColumnHeadersAll()
-    E:RenderGuildFrame()
+    E:RenderGuildFrame(FriendsFrame.playerStatusFrame and GuildPlayerStatusFrame or GuildStatusFrame)
     E:FixToggleButton()
     E:UpdateDetailFrame()
-    --print(GuildFrame:GetWidth())
 end
 
 function A:VERSION_INFO_REQUEST(sender)

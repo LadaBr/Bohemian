@@ -62,6 +62,9 @@ function A:CRAFT2(profId, skillId, craftTypeId, numAvailable, cooldown, reagents
     for _, reagent in pairs(reagents) do
         local reagentCount, playerReagentCount, reagentId = strsplit("~", reagent)
         reagentId = tonumber(reagentId)
+        if not reagentId then
+            return
+        end
         local item = Item:CreateFromItemID(reagentId)
 
         item:ContinueOnItemLoad(function()

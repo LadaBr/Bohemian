@@ -1,0 +1,11 @@
+## Interface: 20503
+## Title: |cFF4068E0|| - |rStatistics
+## Author: Elerae-Golemagg
+## Version: 1.0.0
+## SavedVariables: Bohemian_Statistics
+## Dependencies: Bohemian
+## LoadOnDemand: 0
+
+statistics.lua
+ui.lua
+events.lua
