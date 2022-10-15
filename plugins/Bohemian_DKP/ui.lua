@@ -748,6 +748,9 @@ function E:AddConfigFrames(f)
 end
 
 function E:UpdateAwardDKPButton()
+    if not E.raidUILoaded then
+        return
+    end
     RaidFrameAllAssistCheckButton:ClearAllPoints(true)
     if not IsInRaid() or not E:CanEditDKP() then
         ButtonAwardRaidDKP:Hide()

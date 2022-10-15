@@ -524,6 +524,15 @@ function E:CheckForWipe(fullName, since)
 end
 
 function E:WipeLog(fullName, time)
+    if not CurrentDKPLog.current then
+        C:AddToUpdateQueue(function(id)
+            if CurrentDKPLog.current then
+                C:RemoveFromUpdateQueue(id)
+                E:WipeLog(fullName, time)
+            end
+        end)
+        return
+    end
     time = time or 0
     for name, items in pairs(CurrentDKPLog.current.data) do
         if name == fullName or fullName == "all" then

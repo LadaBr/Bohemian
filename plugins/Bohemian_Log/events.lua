@@ -53,11 +53,10 @@ function A:SYNC_LOG(since, sender)
         C:AddToUpdateQueue(function(id)
             if E.logLoaded then
                 C:RemoveFromUpdateQueue(id)
-                E:LogToChunks(since, function(id, data)
-                    C:SendEventTo(sender, C.EVENT.PAYLOAD_START, "SYNC_LOG", #data, id)
-                end)
+                A:SYNC_LOG(since, sender)
             end
         end)
+        return
     else
         E:LogToChunks(since, function(id, data)
             C:SendEventTo(sender, C.EVENT.PAYLOAD_START, "SYNC_LOG", #data, id)

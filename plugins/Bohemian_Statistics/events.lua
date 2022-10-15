@@ -31,40 +31,23 @@ function A:GUILD_FRAME_UPDATE()
     E:UpdateSelectedListFrame()
 end
 
+function A:GUILD_ROSTER_UPDATE()
+    if E.selectedList ~= 3 then
+        E.updateWhenOpened = true
+    else
+        E.shouldRefresh = true
+        E.refreshIn = 0.01
+    end
+end
+
 function A:GUILD_FRAME_AFTER_UPDATE()
     E:UpdateSelectedListFrame()
-    if E.selectedList ~= 3 then
+    E:UpdateStatisticRows()
+    if E.selectedList == 3 and E.updateWhenOpened then
+        E.updateWhenOpened = false
+        E:UpdateMemberStats()
         return
     end
-    local guildOffset = FauxScrollFrame_GetOffset(GuildListScrollFrame);
-    local showOffline = GetGuildRosterShowOffline()
-    E.members = {}
-    for i = 1, #C.guildRosterIndexMap do
-        --local guildIndex = guildOffset + i
-        local member = C:GetGuildMemberByIndex(i)
-        if member then
-            local fullName, rank, rankIndex, level, class, zone, note, officernote, online, isAway, classFileName = unpack(member)
-            if (not showOffline and online) or showOffline then
-                local stats = Bohemian_Statistics.players[fullName] or {}
-                E.members[i] = {
-                    index = i,
-                    name = fullName,
-                    online = online,
-                    classFileName = classFileName,
-                    achievement = stats.achievement or 0,
-                    hk = stats.hk or 0,
-                    arena2v2 = stats.arena2v2 or 0,
-                    arena3v3 = stats.arena3v3 or 0,
-                    arena5v5 = stats.arena5v5 or 0,
-                    rep = stats.rep or 0
-                }
-            end
-
-        end
-
-    end
-    E:SortMembers()
-    E:UpdateStatisticRows()
 end
 
 --function A:UPDATE_GUILD_MEMBER(row, i, numMembers, fullName, rank, rankIndex, level, class, zone, note, officerNote, online, isAway, classFileName)
@@ -88,7 +71,6 @@ end
 
 
 function A:STATS(achievementPoints, hk, rat2v2, rat3v3, rat5v5, rep, sender)
-    --print(achievementPoints, hk, rat2v2, rat3v3, rat5v5, rep, sender)
     Bohemian_Statistics.players[sender] = {
         achievement = tonumber(achievementPoints),
         hk = tonumber(hk),
@@ -97,6 +79,13 @@ function A:STATS(achievementPoints, hk, rat2v2, rat3v3, rat5v5, rep, sender)
         arena5v5 = tonumber(rat5v5),
         rep = tonumber(rep)
     }
+    if E.refreshIn <= 0 then
+        E:UpdateMemberStats()
+    else
+        E.shouldRefresh = true
+    end
+
+    E.refreshIn = 5
 end
 
 function A:REQUEST_STATS(sender)
@@ -119,6 +108,7 @@ function A:ARENA_TEAM_UPDATE()
 end
 
 function A:PVP_RATED_STATS_UPDATE()
+    E.statsLoaded = true
     E:ShareStats()
 end
 

@@ -10,6 +10,9 @@ local AddonName, E = ...
 Bohemian.RegisterModule(AddonName, E, function()
     E:AddToggleButton()
     E:CreateStatisticsFrame()
+    RequestRatedInfo()
+    E:RefreshOnChange()
+
 end)
 
 local C = E.CORE
@@ -22,14 +25,28 @@ if not Bohemian_Statistics then
         desc = false,
     }
 end
-
+E.refreshIn = 0
 E.members = {}
 
 function E:RequestStats()
     C:SendEvent("GUILD", E.EVENT.REQUEST_STATS)
 end
 
+function E:RefreshOnChange()
+    C:AddToUpdateQueue(function(id, elapsed)
+        if E.refreshIn <= 0 and E.shouldRefresh then
+            E.shouldRefresh = false
+            E:UpdateMemberStats()
+        elseif E.refreshIn > 0 then
+            E.refreshIn = E.refreshIn - elapsed
+        end
+    end)
+end
+
 function E:ShareStats(sendTo)
+    if not E.statsLoaded then
+        return
+    end
     local points = GetTotalAchievementPoints()
     local honorableKills, dishonorableKills, highestRank = GetPVPLifetimeStats()
     local payload = {
@@ -46,7 +63,6 @@ function E:ShareStats(sendTo)
         rep = module:GetPlayerReputation(C:GetPlayerName(true)).total or 0
     end
     table.insert(payload, rep)
-    --print("SHARING STATS", sendTo)
     if sendTo then
         C:SendEventTo(sendTo, E.EVENT.STATS, unpack(payload))
     else
@@ -63,4 +79,34 @@ function E:SortMembers()
             return a[Bohemian_Statistics.sortType] > b[Bohemian_Statistics.sortType]
         end
     end)
+end
+
+function E:UpdateMemberStats()
+    local showOffline = GetGuildRosterShowOffline()
+    E.members = {}
+    for i = 1, #C.guildRosterIndexMap do
+        local member = C:GetGuildMemberByIndex(i)
+        if member then
+            local fullName, rank, rankIndex, level, class, zone, note, officernote, online, isAway, classFileName = unpack(member)
+            if (not showOffline and online) or showOffline then
+                local stats = Bohemian_Statistics.players[fullName] or {}
+                E.members[i] = {
+                    index = i,
+                    name = fullName,
+                    online = online,
+                    classFileName = classFileName,
+                    achievement = stats.achievement or 0,
+                    hk = stats.hk or 0,
+                    arena2v2 = stats.arena2v2 or 0,
+                    arena3v3 = stats.arena3v3 or 0,
+                    arena5v5 = stats.arena5v5 or 0,
+                    rep = stats.rep or 0
+                }
+            end
+
+        end
+
+    end
+    E:SortMembers()
+    E:UpdateStatisticRows()
 end

@@ -31,7 +31,8 @@ local stripOnly = {
     "SkillRankFrameBorder",
     "GuildCraftListFrameSkillFrame",
     "Timer",
-    "Version"
+    "Version",
+    "GuildFrameStatistics",
 }
 
 E.TYPES = {
@@ -182,10 +183,15 @@ E.MODULES = {
             RaidFrameAllAssistCheckButton:ClearAllPoints(true)
             RaidFrameAllAssistCheckButton:SetPoint("TOPLEFT", 1, -24)
         end
+        local fn2 = module.AdjustRaidFrame
+        module.AdjustRaidFrame = function()
+            fn2(module)
+            ButtonAwardRaidDKP:ClearAllPoints(true)
+            ButtonAwardRaidDKP:SetPoint("RIGHT", RaidFrameReadyCheckButton, "LEFT", -2, 0)
+            ButtonAwardRaidDKP:SetHeight(ButtonAwardRaidDKP:GetHeight() + 2)
+        end
         module:UpdateAwardDKPButton()
-        ButtonAwardRaidDKP:ClearAllPoints(true)
-        ButtonAwardRaidDKP:SetPoint("RIGHT", RaidFrameReadyCheckButton, "LEFT", -2, 0)
-        ButtonAwardRaidDKP:SetHeight(ButtonAwardRaidDKP:GetHeight() + 2)
+
     end,
     Bohemian_Raid = function(module)
         local fn = function(module)
