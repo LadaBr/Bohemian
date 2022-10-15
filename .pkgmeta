@@ -11,3 +11,4 @@ move-folders:
     Bohemian/plugins/Bohemian_Talents: Bohemian_Talents
     Bohemian/plugins/Bohemian_Reputation: Bohemian_Reputation
     Bohemian/plugins/Bohemian_Achievements: Bohemian_Achievements
+    Bohemian/plugins/Bohemian_Statistics: Bohemian_Statistics

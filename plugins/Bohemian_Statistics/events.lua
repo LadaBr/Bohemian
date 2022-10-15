@@ -98,6 +98,7 @@ function A:STATS(achievementPoints, hk, rat2v2, rat3v3, rat5v5, rep, sender)
 end
 
 function A:REQUEST_STATS(sender)
+    print("REQUESTED STATS")
     E:ShareStats(sender)
 end
 
