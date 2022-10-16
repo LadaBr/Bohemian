@@ -94,11 +94,11 @@ function E:CreateStatisticsFrame()
 
     for i = 1, GUILDMEMBERS_TO_DISPLAY do
         local statisticsRow = C:CreateFrame("BUTTON", "$parentRow"..i, statisticsFrame)
-        statisticsRow:SetSize(430, 16)
+        statisticsRow:SetSize(406, 16)
         local highlight = statisticsRow:CreateTexture("$parentHighlight", "ARTWORK")
         highlight:SetTexture("Interface\\FriendsFrame\\UI-FriendsFrame-HighlightBar")
         highlight:SetPoint("TOPLEFT", 5, -2)
-        highlight:SetSize(430,16)
+        highlight:SetSize(406,16)
         statisticsRow:SetHighlightTexture(highlight)
         if i == 1 then
             statisticsRow:SetPoint("TOPLEFT", GuildFrame, 3, -82)

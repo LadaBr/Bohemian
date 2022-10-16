@@ -39,10 +39,6 @@ function E:Load()
     C_Timer.After(20, function()
         E.stopIgnoringOffline = true
     end)
-
-    if ChatThrottleLib then
-        ChatThrottleLib.MAX_CPS = 3000
-    end
 end
 
 function E:AddToUpdateQueue(cb)

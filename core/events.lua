@@ -41,7 +41,7 @@ function A:ADDON_LOADED(name)
             pcall(fn, self, ...)
         end
     end
-    if name == "ChatThrottleLib" then
+    if ChatThrottleLib then
         ChatThrottleLib.MAX_CPS = 3000
     end
 end

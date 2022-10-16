@@ -13,11 +13,21 @@ GUILD_FRAME_COLUMN_WIDTH_PROFESSIONS = 101
 function E:CreateGuildFrameProfessionsColumnHeader()
     local f = C:AddGuildColumnHeader("GuildFrameColumnHeader6", GUILD_FRAME_COLUMN_WIDTH_PROFESSIONS, LAST_COLUMN_HEADER_INDEX, "Profession")
     f:SetText("Professions")
-    f:SetScript("OnMouseDown", function()
+    local callback = function()
         GuildCraftListFrame:Show()
         E:PositionGuildCraftFrame()
         E:RenderCraftsMulti()
-    end)
+    end
+    f:SetScript("OnMouseDown", callback)
+    local book = C:CreateFrame("Button", "$parentBook", f)
+    book:SetSize(17, 17)
+    book:SetPoint("RIGHT", f, -5, -2)
+    book:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight")
+    book:RegisterForClicks("LeftButtonDown", "RightButtonDown")
+    book:SetScript("OnClick", callback)
+    local texture = book:CreateTexture(nil, "BACKGROUND")
+    texture:SetAllPoints(true)
+    texture:SetTexture(133741)
     E:CreateGuildFrameProfessionColumns()
 end
 
