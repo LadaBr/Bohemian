@@ -22,7 +22,7 @@ end
 
 function E:HookExistingBagFrames()
     local module = C:GetModule("Bohemian_Auction")
-    if module then
+    if module and ElvUI[1].Bags.BagFrames then
         for _, bagFrame in next, ElvUI[1].Bags.BagFrames do
             for _, bagID in ipairs(bagFrame.BagIDs) do
                 for slotID = 1, GetContainerNumSlots(bagID) do
