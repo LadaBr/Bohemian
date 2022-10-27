@@ -242,12 +242,12 @@ function E:UpdateStatisticRows()
             local rep = _G["GuildFrameStatisticsFrameRow"..i.."Rep"]
             row:Show()
             nameCol:SetText(C:AddClassColorToName(member.name))
-            achievementCol:SetText(member.achievement > 0 and member.achievement or "-")
-            hkCol:SetText(member.hk > 0 and member.hk or "-")
-            arena2v2:SetText(member.arena2v2 > 0 and member.arena2v2 or "-")
-            arena3v3:SetText(member.arena3v3 > 0 and member.arena3v3  or "-")
-            arena5v5:SetText(member.arena5v5 > 0 and member.arena5v5  or "-")
-            rep:SetText(member.rep > 0 and member.rep or "-")
+            achievementCol:SetText(member.achievement == 0 and "-" or member.achievement)
+            hkCol:SetText(member.hk == 0 and "-" or member.hk)
+            arena2v2:SetText(member.arena2v2 == 0 and "-" or member.arena2v2)
+            arena3v3:SetText(member.arena3v3 == 0 and "-" or member.arena3v3)
+            arena5v5:SetText(member.arena5v5 == 0 and "-" or member.arena5v5)
+            rep:SetText(member.rep == 0 and "-" or member.rep)
             if member.online then
                 nameCol:SetAlpha(1)
             else

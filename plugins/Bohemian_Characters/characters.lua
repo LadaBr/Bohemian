@@ -24,7 +24,9 @@ if not RosterCharacters then
 end
 
 if not Bohemian_Characters then
-    Bohemian_Characters = {}
+    Bohemian_Characters = {
+        guilds = {}
+    }
 end
 
 function E:SaveCharacterInfo()
@@ -35,6 +37,9 @@ function E:SaveCharacterInfo()
     end
     if not AccountData.characters[realm] then
         AccountData.characters[realm] = {}
+    end
+    if not Bohemian_Characters.guilds then
+        Bohemian_Characters.guilds = {}
     end
 
     local guildName, guildRankName, guildRankIndex = GetGuildInfo("player")
@@ -190,24 +195,31 @@ function E:StartRosterChangeDetection()
             for _, data in pairs(C.guildRoster) do
                 table.insert(roster, data)
             end
-            if #Bohemian_Characters > 0 then
-                E:CompareRosters(Bohemian_Characters, roster, function(left)
+            local characters = E:GetGuildRoster()
+            if #characters > 0 then
+                E:CompareRosters(characters, roster, function(left)
                     if #left > 0 then
                         local parsed = E:GetPrettyPlayers(left)
                         E:Print("Players left the guild: " .. table.concat(parsed, ", "))
                     end
                 end)
-                E:CompareRosters(roster, Bohemian_Characters, function(joined)
+                E:CompareRosters(roster, characters, function(joined)
                     if #joined > 0 then
                         local parsed = E:GetPrettyPlayers(joined)
                         E:Print("Players joined the guild: " .. table.concat(parsed, ", "))
                     end
                 end)
             end
-            Bohemian_Characters = roster
+            local guildName = C:GetGuildName()
+            Bohemian_Characters.guilds[guildName] = roster
         end
         if E.cacheCooldown > 0 then
             E.cacheCooldown = E.cacheCooldown - elapsed
         end
     end)
+end
+
+function E:GetGuildRoster()
+    local guildName = C:GetGuildName()
+    return Bohemian_Characters.guilds[guildName] or {}
 end

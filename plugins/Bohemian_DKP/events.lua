@@ -28,6 +28,7 @@ end
 
 function A:ENCOUNTER_END(encounterID, encounterName, difficultyID, groupSize, success)
     E.isEncounterInProgress = false
+    print("ENCOUNTER_END", encounterID, encounterName, difficultyID, groupSize, success)
     if not success then
         return
     end
@@ -38,6 +39,7 @@ function A:ENCOUNTER_END(encounterID, encounterName, difficultyID, groupSize, su
 end
 
 function A:ENCOUNTER_START()
+    print("ENCOUNTER_START")
     E.isEncounterInProgress = true
 end
 
