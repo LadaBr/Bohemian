@@ -17,17 +17,6 @@ E.remainingRequest = 0
 E.canShareInfo = false
 E.canRequestRaidInfo = true
 E.isCasting = false
-E.timers = {
-    idle = 0,
-    idle_ooc = 0,
-    afk = 0,
-    active = 0,
-    regen = 0,
-    dead = 0,
-    cc = 0,
-    session = 0,
-    offline = 0,
-}
 E.raidTimers = {}
 E.GCD = 0
 E.currentResist = {}
@@ -41,11 +30,15 @@ Bohemian_RaidStats = {}
 Bohemian.RegisterModule(AddonName, E, function()
     Bohemian_RaidConfig.announceParry = Bohemian_RaidConfig.announceParry == nil and true or Bohemian_RaidConfig.announceParry
     Bohemian_RaidConfig.announceMD = Bohemian_RaidConfig.announceMD == nil and true or Bohemian_RaidConfig.announceMD
-    E:AddConfigFrames(E.CORE:CreateModuleInterfaceConfig("Raid"))
+    Bohemian_RaidConfig.guildRaidMemberRatio = Bohemian_RaidConfig.guildRaidMemberRatio == nil and 80 or Bohemian_RaidConfig.guildRaidMemberRatio
+    Bohemian_RaidConfig.raidHours = Bohemian_RaidConfig.raidHours == nil and false or Bohemian_RaidConfig.raidHours
 
+    E:AddConfigFrames(E.CORE:CreateModuleInterfaceConfig("Raid"))
+    E:AdjustDetailFrame()
     if IsAddOnLoaded("Blizzard_RaidUI") then
         E:LoadAddon()
     end
+
 end)
 
 local C = E.CORE
@@ -59,7 +52,6 @@ function E:LoadAddon()
     E:AddRaidInfoFrame()
     E.EVENTS:GROUP_ROSTER_UPDATE()
     E:Hook()
-    E:Init()
 end
 
 function E:CacheRaid()
@@ -114,10 +106,8 @@ function E:GetResistInfo()
 end
 
 function E:ShareInfo()
-    if E.canShareInfo then
-        E.remaining = E.INTERVAL
-    end
-    E.canShareInfo = true
+    E.lastSharedResist = E:GetResistInfo()
+    C:SendPriorityEvent(E:GetInstanceChannel(), "RESIST_INFO", unpack(E.lastSharedResist))
 end
 
 function E:ShareInfoIfChanged()
@@ -125,30 +115,6 @@ function E:ShareInfoIfChanged()
         if E.lastSharedResist[i] ~= value then
             E:ShareInfo()
         end
-    end
-end
-
-function E:ShareAllInfo()
-    E.lastSharedResist = E:GetResistInfo()
-    C:SendPriorityEvent(E:GetInstanceChannel(), "RESIST_INFO", unpack(E.lastSharedResist))
-end
-
-function E:ShareSessionInfo()
-    local data = {}
-    for type, value in pairs(E.timers) do
-        data[#data + 1] = type.."-"..round(value, 2)
-    end
-    C:SendPriorityEvent(E:GetInstanceChannel(), "SESSION_INFO", table.concat(data, ","))
-end
-
-function E:UpdateGCD(spell)
-    local _, duration = GetSpellCooldown(spell)
-    E.GCD = duration
-end
-
-function E:UpdateCastData(unitTarget, castGUID, spellID)
-    if unitTarget == "player" then
-        E:UpdateGCD(spellID)
     end
 end
 
@@ -168,183 +134,6 @@ function E:UpdateAuraData(unitTarget)
     end
 end
 
-function E:Init()
-    local update = 0.1
-    local update2 = 1
-    local update3 = 5
-    E.CORE:AddToUpdateQueue(function(id, elapsed)
-        if E.GCD > 0 then
-            E.GCD = E.GCD - elapsed
-        end
-        if not E.currentSession or not E.currentSession.firstCombat or E.currentSession.completed then
-            return
-        end
-
-        local isDead = UnitIsDeadOrGhost("player")
-        if E.waitUntilAlive and not isDead then
-            E.waitUntilAlive = false
-            E.EVENTS:ZONE_CHANGED_NEW_AREA()
-        end
-
-        E.timers.session = E.timers.session + elapsed
-        if UnitCastingInfo("player") or UnitChannelInfo("player") or E.GCD > 0 then
-            E.timers.active = E.timers.active + elapsed
-        elseif E.isDrinking or E.isEating then
-            E.timers.regen = E.timers.regen + elapsed
-        elseif isDead then
-            E.timers.dead = E.timers.dead + elapsed
-        elseif UnitIsAFK("player") then
-            E.timers.afk = E.timers.afk + elapsed
-        elseif E.isCCed then
-            E.timers.cc = E.timers.cc + elapsed
-        elseif InCombatLockdown() and not IsCurrentSpell(6603) and not IsCurrentSpell(5019) then
-            E.timers.idle = E.timers.idle + elapsed
-        elseif not InCombatLockdown() then
-            E.timers.idle_ooc = E.timers.idle_ooc + elapsed
-        end
-        for name, _ in pairs(E.raidMembersOffline) do
-            if not E.currentSession.stats[name] then
-                E.currentSession.stats[name] = E:CreateStats()
-            end
-            E.currentSession.stats[name].timers.offline = E.currentSession.stats[name].timers.offline + elapsed
-            E.currentSession.stats[name].timers.session = E.currentSession.stats[name].timers.session + elapsed
-        end
-        update = update - elapsed
-        if update <= 0 then
-            update = 0.1
-            E:UpdateTimers()
-            RaidFrameSessionDuration:SetText(C:display_time(E.timers.session))
-        end
-
-        update2 = update2 - elapsed
-        if update2 <= 0 then
-            update2 = 1
-            local instance = E:GetCurrentSavedInstance()
-            if instance then
-                if instance[11] == instance[12] then
-                    E.currentSession.completed = GetServerTime()
-                    local duration = E.currentSession.firstCombat and E.currentSession.completed - E.currentSession.firstCombat or nil
-                    E:Print("Congratulations! You finished "..instance[1]..(duration and " in "..E:ConditionalTimeFormat(duration) or "".."!"))
-                end
-            end
-        end
-        if E.currentSession.isTemp then
-            update3 = update3 - elapsed
-            if update3 <= 0 then
-                update3 = 60
-                RequestRaidInfo()
-            end
-        end
-    end)
-
-    E.CORE:AddToUpdateQueue(function(id, elapsed)
-        if E:IsSessionInProgress() then
-            E.remainingSession = E.remainingSession - elapsed
-            if E.remainingSession <= 0 then
-                E.remainingSession = E.SESSION_INTERVAL
-                if E.timers.session and E.timers.session > 0 then
-                    E:ShareSessionInfo()
-                end
-            end
-        end
-
-        if E.remaining <= 0 and not E.canShareInfo or not E.currentSession then
-            return
-        end
-        E.remaining = E.remaining - elapsed
-        if not E.canShareInfo then
-            return
-        end
-        if E.remaining <= 0 then
-            E.canShareInfo = false
-            E.remaining = E.INTERVAL
-            E:ShareAllInfo()
-        end
-    end)
-
-    E.CORE:AddToUpdateQueue(function(id, elapsed)
-        if E.remainingRequest <= 0 and not E.canRequestRaidInfo or not E.currentSession then
-            return
-        end
-        E.remainingRequest = E.remainingRequest - elapsed
-        if not E.canRequestRaidInfo then
-            return
-        end
-        if E.remainingRequest <= 0 then
-            E.canRequestRaidInfo = false
-            E.remainingRequest = 20
-            RequestRaidInfo()
-        end
-    end)
-end
-
-function E:RequestRaidInfo()
-    if E.canRequestRaidInfo then
-        E.remainingRequest = 20
-    end
-    E.canRequestRaidInfo = true
-end
-
-function E:CreateStats()
-    return {
-        timers = {
-            idle = 0,
-            idle_ooc = 0,
-            afk = 0,
-            active = 0,
-            regen = 0,
-            dead = 0,
-            cc = 0,
-            session = 0,
-            offline = 0,
-        }
-    }
-end
-
-function E:IsSessionInProgress()
-    return E.currentSession and not E.currentSession.completed and E.currentSession.firstCombat
-end
-
-function E:CreateSession(name, difficulty, id, isTemp)
-    if not Bohemian_RaidStats[name] then
-        Bohemian_RaidStats[name] = {}
-    end
-    if not Bohemian_RaidStats[name][difficulty] then
-        Bohemian_RaidStats[name][difficulty] = {}
-    end
-    if not Bohemian_RaidStats[name][difficulty][id] then
-        Bohemian_RaidStats[name][difficulty][id] = {
-            created = GetServerTime(),
-            id = id,
-            name = name,
-            difficulty = difficulty,
-            isTemp = isTemp,
-            stats = {
-                [C:GetPlayerName(true)] = E:CreateStats()
-            },
-        }
-    end
-end
-
-function E:SetCurrentSession(session)
-    E.currentSession = session
-    Bohemian_RaidConfig.activeSession = session
-    if not session then
-        return
-    end
-
-    local name = C:GetPlayerName(true)
-    if not E.currentSession.stats then
-        E.currentSession.stats = {}
-    end
-    if not E.currentSession.stats[name] then
-        E.currentSession.stats[name] = E:CreateStats()
-    end
-    Bohemian_RaidStats[session.name][session.difficulty][session.id] = E.currentSession
-    E.timers = E.currentSession.stats[C:GetPlayerName(true)].timers
-
-end
-
 function E:GetInstanceChannel()
     if IsInRaid() then
         return "RAID"
@@ -353,52 +142,6 @@ function E:GetInstanceChannel()
         return "PARTY"
     end
     return "SAY"
-end
-
-function E:SetTemporarySession(name, difficulty)
-    if Bohemian_RaidConfig.activeSession and Bohemian_RaidConfig.activeSession.name == name and Bohemian_RaidConfig.activeSession.difficulty == difficulty then
-        E:SetCurrentSession(Bohemian_RaidConfig.activeSession)
-    else
-        local id = C:uuid()
-        E:CreateSession(name, difficulty, id, true)
-        E:SetCurrentSession(Bohemian_RaidStats[name][difficulty][id])
-    end
-end
-
-function E:GetCurrentSavedInstance()
-    local name, _, difficulty = GetInstanceInfo()
-    for _, instance in ipairs(E.savedInstances) do
-        if instance[1] == name and instance[4] == difficulty then
-            return instance
-        end
-    end
-end
-
-function E:StartSession(name, difficulty)
-    local temporary = true
-    for _, instance in ipairs(E.savedInstances) do
-        if instance[1] == name then
-            if Bohemian_RaidStats[name] == nil or Bohemian_RaidStats[name][difficulty] == nil or Bohemian_RaidStats[name][difficulty][instance[2]] == nil then
-                E:CreateSession(name, difficulty, instance[2])
-            end
-            E:SetCurrentSession(Bohemian_RaidStats[name][difficulty][instance[2]])
-            temporary = false
-        end
-    end
-    if #E.savedInstances == 0 or temporary then
-        E:SetTemporarySession(name, difficulty)
-    end
-    E:GetZone()
-end
-
-function E:StopSession()
-    E.currentSession = nil
-end
-
-function E:ResetSession()
-    for timer, _ in pairs(E.timers) do
-        E.timers[timer] = 0
-    end
 end
 
 function E:GetZone()
@@ -414,4 +157,112 @@ function E:UpdateSavedInstances()
             E.savedInstances[#E.savedInstances + 1] = data
         end
     end
+end
+
+function E:SetRaidHours(fullName, value)
+    if not CanEditPublicNote() then
+        return
+    end
+
+    value = C:roundWhole(value, 1)
+    local note = C:GetGuildMemberNote(fullName)
+    local dkpModule = C:GetModule("Bohemian_DKP")
+    local currentHours
+    local valueStr
+    if dkpModule then
+        local dkp, hours = strsplit(" ", note)
+        valueStr = dkp.." "..value
+    else
+        if not string.find(note, "0+(%d+)") then
+            valueStr = value
+        end
+    end
+    GuildRosterSetPublicNote(C.rosterIndex[fullName], valueStr)
+end
+
+function E:AddRaidHours(fullName, value)
+    E:SetRaidHours(fullName, E:GetMemberRaidHours(fullName) + value)
+end
+
+function E:NoteToRaidHours(note)
+    local dkpModule = C:GetModule("Bohemian_DKP")
+    local pattern = "(%d+)"
+    if dkpModule then
+        if string.find(note, " ") then
+            pattern = "0+%d+ " .. pattern
+        else
+            return 0
+        end
+    end
+
+    return tonumber(note:match(pattern))
+end
+
+function E:GetMemberRaidHours(name)
+    local note = C:GetGuildMemberNote(name)
+    return E:NoteToRaidHours(note)
+end
+
+function E:GetGuildMembersInRaid()
+    local members = {}
+    local total = 0
+    for name, member in pairs(E.raidMembers) do
+        if C.guildRoster[name] then
+            members[name] = member
+            total = total + 1
+        end
+    end
+    return members, total
+end
+
+function E:IsGuildRaid()
+    local name, type, difficulty, difficultyName, maxPlayers = GetInstanceInfo()
+    if type == "raid" then
+        local members, total = E:GetGuildMembersInRaid()
+        if total / maxPlayers >= Bohemian_RaidConfig.guildRaidMemberRatio / 100 then
+            return true
+        end
+    end
+    return false
+end
+
+RAID_TIME_COLLECT_INTERVAL = 60
+
+function E:StartRaidHours()
+    if E.collectingRaidHours then
+        return
+    end
+    E.collectingRaidHours = true
+    E.timeForCollect = RAID_TIME_COLLECT_INTERVAL
+
+    C:AddToUpdateQueue(function(id, elapsed)
+        if not E.collectingRaidHours then
+            C:RemoveFromUpdateQueue(id)
+            return
+        end
+        if not Bohemian_RaidConfig.raidHours then
+            return
+        end
+        E.timeForCollect = E.timeForCollect - elapsed
+        if E.timeForCollect <= 0 then
+            E.timeForCollect = RAID_TIME_COLLECT_INTERVAL
+            local myZone = GetInstanceInfo()
+            for index, memberName in ipairs(E.raidMembersIndex) do
+                local member = E.raidMembers[memberName]
+                local unitId = "raid"..index
+                local isAFK = UnitIsAFK(unitId)
+                local inCombat = UnitAffectingCombat(unitId)
+                if member and C.guildRoster[memberName] and not isAFK and member.online and inCombat then
+                    local zone = C.guildRoster[memberName][6]
+                    if myZone == zone then
+                        E:AddRaidHours(memberName, RAID_TIME_COLLECT_INTERVAL / 60)
+                    end
+                end
+            end
+        end
+    end)
+end
+
+function E:GetReadableRaidHours(hours, decimals)
+    return round(hours / 60, decimals or 1)
 end

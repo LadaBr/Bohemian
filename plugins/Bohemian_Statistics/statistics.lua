@@ -57,10 +57,10 @@ function E:ShareStats(sendTo)
         local rating = GetPersonalRatedInfo(i)
         table.insert(payload, rating)
     end
-    local module = C:GetModule("Bohemian_Reputation")
+    local moduleRep = C:GetModule("Bohemian_Reputation")
     local rep = 0
-    if module then
-        rep = module:GetPlayerReputation(C:GetPlayerName(true)).total or 0
+    if moduleRep then
+        rep = moduleRep:GetPlayerReputation(C:GetPlayerName(true)).total or 0
     end
     table.insert(payload, rep)
     if sendTo then
@@ -90,6 +90,11 @@ function E:UpdateMemberStats()
             local fullName, rank, rankIndex, level, class, zone, note, officernote, online, isAway, classFileName = unpack(member)
             if (not showOffline and online) or showOffline then
                 local stats = Bohemian_Statistics.players[fullName] or {}
+                local raidModule = C:GetModule("Bohemian_Raid")
+                local hours = 0
+                if raidModule then
+                    hours = raidModule:GetMemberRaidHours(fullName)
+                end
                 E.members[i] = {
                     index = i,
                     name = fullName,
@@ -100,7 +105,8 @@ function E:UpdateMemberStats()
                     arena2v2 = stats.arena2v2 or 0,
                     arena3v3 = stats.arena3v3 or 0,
                     arena5v5 = stats.arena5v5 or 0,
-                    rep = stats.rep or 0
+                    rep = stats.rep or 0,
+                    hours = hours
                 }
             end
 

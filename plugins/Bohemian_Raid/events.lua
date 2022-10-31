@@ -11,44 +11,11 @@ C:RegisterEvent("ZONE_CHANGED")
 C:RegisterEvent("READY_CHECK")
 C:RegisterEvent("READY_CHECK_FINISHED")
 C:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
-C:RegisterEvent("UNIT_SPELLCAST_START")
-C:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
-C:RegisterEvent("UNIT_SPELLCAST_STOP")
-C:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-C:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
-C:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
 C:RegisterEvent("UNIT_AURA")
 C:RegisterEvent("UPDATE_INSTANCE_INFO")
 C:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-C:RegisterEvent("PLAYER_REGEN_DISABLED")
-C:RegisterEvent('CHAT_MSG_SYSTEM')
 C:RegisterEvent('ENCOUNTER_END')
 
-function A:UNIT_SPELLCAST_START(unitTarget, castGUID, spellID)
-    if unitTarget == "player" then
-        E:UpdateGCD(spellID)
-    end
-end
-
-function A:UNIT_SPELLCAST_INTERRUPTED(...)
-    E:UpdateCastData(...)
-end
-
-function A:UNIT_SPELLCAST_STOP(...)
-    E:UpdateCastData(...)
-end
-
-function A:UNIT_SPELLCAST_SUCCEEDED(...)
-    E:UpdateCastData(...)
-end
-
-function A:UNIT_SPELLCAST_CHANNEL_START(...)
-    E:UpdateCastData(...)
-end
-
-function A:UNIT_SPELLCAST_CHANNEL_STOP(...)
-    E:UpdateCastData(...)
-end
 
 
 function A:UNIT_AURA(...)
@@ -84,7 +51,7 @@ function A:COMBAT_LOG_EVENT_UNFILTERED(...)
     if Bohemian_RaidConfig.announceMD then
         local _, subevent, _, _, sourceName, _, _, _, destName, _, _, _, spellName = CombatLogGetCurrentEventInfo()
         if subevent == "SPELL_CAST_SUCCESS" then
-            if spellName == "Misdirection" then
+            if spellName == "Misdirection" or spellName == "Tricks of the Trade" then
                 if E.raidMembers[sourceName] then
                     SendChatMessage(format("%s is misdirecting to %s.", sourceName, destName), "RAID")
                 end
@@ -165,23 +132,6 @@ end
 
 function A:UPDATE_INSTANCE_INFO()
     E:UpdateSavedInstances()
-    if not E.loadedInstanceInfo then
-        E.loadedInstanceInfo = true
-        A:ZONE_CHANGED_NEW_AREA()
-    end
-    if E.currentSession and E.currentSession.isTemp or E.updateSessionId then
-        E.updateSessionId = false
-        local instance = E:GetCurrentSavedInstance()
-        if instance then
-            E.currentSession.isTemp = false
-            local name = instance[1]
-            local difficulty = instance[4]
-            Bohemian_RaidStats[name][difficulty][E.currentSession.id] = nil
-            E.currentSession.id = instance[2]
-            Bohemian_RaidStats[name][difficulty][instance[2]] = E.currentSession
-        end
-
-    end
     RaidFrameRaidInfoButton:Enable()
 end
 
@@ -193,84 +143,16 @@ function A:PLAYER_ENTERING_WORLD(isLogin, isReload)
 end
 
 function A:ZONE_CHANGED_NEW_AREA()
-    if not E.loadedInstanceInfo then
-        return
-    end
-    if IsInInstance() and IsInRaid(LE_PARTY_CATEGORY_HOME) and not IsInRaid(LE_PARTY_CATEGORY_INSTANCE) then
-        local name, type, difficulty = GetInstanceInfo()
-        if type == "raid" then
-            E:StartSession(name, difficulty)
-            if E.firstLoad then
-                E.firstLoad = false
-                local name = C:GetPlayerName(true)
-                local offlineTime = GetServerTime() - BohemianConfig.lastTimeOnline
-
-                if E:IsSessionInProgress() then
-                    E.currentSession.stats[name].timers.offline = E.currentSession.stats[name].timers.offline + offlineTime
-                    E.currentSession.stats[name].timers.session = E.currentSession.stats[name].timers.session + offlineTime
-                end
-            end
-        end
-    else
-        if UnitIsDeadOrGhost("player") then
-            E.waitUntilAlive = true
-        else
-            E:StopSession()
+    if IsInInstance() and IsInRaid(LE_PARTY_CATEGORY_HOME) and not IsInRaid(LE_PARTY_CATEGORY_INSTANCE) and E:IsGuildRaid() then
+        E:Print("This raid counts as a guild run.")
+        if UnitIsGroupLeader("player") then
+            E:StartRaidHours()
+            return
         end
     end
+    E.collectingRaidHours = false
 end
 
-function A:PLAYER_REGEN_DISABLED()
-    if E.currentSession then
-        if not E.currentSession.firstCombat then
-            E.currentSession.firstCombat = GetServerTime()
-        end
-    end
-end
-
-
-function A:CHAT_MSG_SYSTEM(message)
-    if message == INSTANCE_SAVED then
-        if E.currentSession then
-            E.updateSessionId = true
-            RequestRaidInfo()
-        end
-    end
-    local _,_, name = string.find(message, "(.+) has been reset.$")
-
-    if name then
-        C:SendPriorityEvent(E:GetInstanceChannel(), "INSTANCE_RESET", name)
-    end
-end
-
-function A:INSTANCE_RESET(name)
-    if name then
-        if Bohemian_RaidStats[name] then
-            for diff, data in pairs(Bohemian_RaidStats[name]) do
-                for id, instance in pairs(data) do
-                    if instance.isTemp then
-                        Bohemian_RaidStats[name][diff][id] = nil
-                    end
-                end
-            end
-        end
-        if Bohemian_RaidConfig.activeSession and Bohemian_RaidConfig.activeSession.isTemp then
-            E:SetCurrentSession(nil)
-        end
-    end
-end
-
-function A:SESSION_INFO(data, sender)
-    if not E.currentSession then
-        return
-    end
-    local items = {strsplit(",", data)}
-    for _, item in ipairs(items) do
-        local type, value = strsplit("-", item)
-        if not E.currentSession.stats[sender] or not E.currentSession.stats[sender].timers  then
-            E.currentSession.stats[sender] = E:CreateStats()
-        end
-        E.currentSession.stats[sender].timers[type] = tonumber(value)
-    end
-    E:UpdateRaidInfoFrame()
+function A:GUILD_FRAME_AFTER_UPDATE()
+    E:UpdateDetailFrame()
 end

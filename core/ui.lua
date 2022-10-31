@@ -648,3 +648,109 @@ function E:AddTooltip(frame, anchorType)
         GameTooltip:Hide();
     end)
 end
+
+function E:CreateEmblem(width, height, parent)
+
+    local tabardBackgroundUpper, tabardBackgroundLower, tabardEmblemUpper, tabardEmblemLower, tabardBorderUpper, tabardBorderLower = GetGuildTabardFiles();
+    local emblem = E:CreateFrame("Frame", "$parentEmblem", parent or UIParent)
+    emblem:SetSize(width, height)
+
+    local tex = emblem:CreateTexture(nil, "ARTWORK")
+    tex:SetAllPoints(emblem)
+    tex:SetTexture("Interface/Tooltips/UI-Tooltip-Background")
+    tex:SetColorTexture(0, 0, 0, 0.5)
+
+
+    local mask = emblem:CreateMaskTexture()
+    mask:SetAllPoints(tex)
+    mask:SetTexture("Interface/CHARACTERFRAME/TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    tex:AddMaskTexture(mask)
+
+    --local left = emblem:CreateTexture("$parentLeft", "ARTWORK")
+    --left:SetTexture("Interface\\GuildBankFrame\\UI-GuildBankFrame-EmblemBorder") -- "Interface\\DialogFrame\\UI-DialogBox-Header"
+    --left:SetSize(height * 6.4, height)
+    --left:SetPoint("TOPLEFT", 0, 0)
+    --left:SetTexCoord(0, 1, 0, 0.3215)
+    --
+    --local right = emblem:CreateTexture("$parentRight", "ARTWORK")
+    --right:SetTexture("Interface\\GuildBankFrame\\UI-GuildBankFrame-EmblemBorder") -- "Interface\\DialogFrame\\UI-DialogBox-Header"
+    --right:SetSize(height * 6.4, height - 1)
+    --right:SetPoint("TOPLEFT", left, "TOPRIGHT", 0, -1)
+    --right:SetTexCoord(0, 1, 0.31640625, 0.625)
+
+    local upperLeft = emblem:CreateTexture("$parentBackgroundUL", "BACKGROUND", nil, -1)
+    upperLeft:SetSize(width, height)
+    upperLeft:SetPoint("TOPLEFT", tex, 0, 0)
+    upperLeft:SetTexCoord(0.5, 1, 0, 1)
+    upperLeft:SetTexture(tabardBackgroundUpper)
+
+    local upperRight = emblem:CreateTexture("$parentBackgroundUR", "BACKGROUND", nil, -1)
+    upperRight:SetSize(width, height)
+    upperRight:SetPoint("LEFT", upperLeft, "RIGHT", 0, 0)
+    upperRight:SetTexCoord(1, 0.5, 0, 1)
+    upperRight:SetTexture(tabardBackgroundUpper)
+
+    local bottomLeft = emblem:CreateTexture("$parentBackgroundBL", "BACKGROUND", nil, -1)
+    bottomLeft:SetSize(width, height / 2)
+    bottomLeft:SetPoint("TOP", upperLeft, "BOTTOM", 0, 0)
+    bottomLeft:SetTexCoord(0.5, 1, 0, 1)
+    bottomLeft:SetTexture(tabardBackgroundLower)
+
+    local bottomRight = emblem:CreateTexture("$parentBackgroundBR", "BACKGROUND", nil, -1)
+    bottomRight:SetSize(width, height / 2)
+    bottomRight:SetPoint("LEFT", bottomLeft, "RIGHT", 0, 0)
+    bottomRight:SetTexCoord(1, 0.5, 0, 1)
+    bottomRight:SetTexture(tabardBackgroundLower)
+
+    local upperLeftBorder = emblem:CreateTexture("$parentBorderUL", "BORDER", nil, -1)
+    upperLeftBorder:SetSize(width, height)
+    upperLeftBorder:SetPoint("TOPLEFT", upperLeft, 0, 0)
+    upperLeftBorder:SetTexCoord(0.5, 1, 0, 1)
+    upperLeftBorder:SetTexture(tabardBorderUpper)
+
+    local upperRightBorder = emblem:CreateTexture("$parentBorderUR", "BORDER", nil, -1)
+    upperRightBorder:SetSize(width, height)
+    upperRightBorder:SetPoint("LEFT", upperLeftBorder, "RIGHT", 0, 0)
+    upperRightBorder:SetTexCoord(1, 0.5, 0, 1)
+    upperRightBorder:SetTexture(tabardBorderUpper)
+
+    local bottomLeftBorder = emblem:CreateTexture("$parentBorderBL", "BORDER", nil, -1)
+    bottomLeftBorder:SetSize(width, height / 2)
+    bottomLeftBorder:SetPoint("TOP", upperLeftBorder, "BOTTOM", 0, 0)
+    bottomLeftBorder:SetTexCoord(0.5, 1, 0, 1)
+    bottomLeftBorder:SetTexture(tabardBorderLower)
+
+    local bottomRightBorder = emblem:CreateTexture("$parentBorderBR", "BORDER", nil, -1)
+    bottomRightBorder:SetSize(width, height / 2)
+    bottomRightBorder:SetPoint("LEFT", bottomLeftBorder, "RIGHT", 0, 0)
+    bottomRightBorder:SetTexCoord(1, 0.5, 0, 1)
+    bottomRightBorder:SetTexture(tabardBorderLower)
+
+
+    local upperLeftEmblem = emblem:CreateTexture("$parentEmblemUL", "BORDER", nil, -1)
+    upperLeftEmblem:SetSize(width, height)
+    upperLeftEmblem:SetPoint("TOPLEFT", upperLeft, 0, 0)
+    upperLeftEmblem:SetTexCoord(0.5, 1, 0, 1)
+    upperLeftEmblem:SetTexture(tabardEmblemUpper)
+
+    local upperRightEmblem = emblem:CreateTexture("$parentEmblemUR", "BORDER", nil, -1)
+    upperRightEmblem:SetSize(width, height)
+    upperRightEmblem:SetPoint("LEFT", upperLeftBorder, "RIGHT", 0, 0)
+    upperRightEmblem:SetTexCoord(1, 0.5, 0, 1)
+    upperRightEmblem:SetTexture(tabardEmblemUpper)
+
+    local bottomLeftEmblem = emblem:CreateTexture("$parentEmblemBL", "BORDER", nil, -1)
+    bottomLeftEmblem:SetSize(width, height / 2)
+    bottomLeftEmblem:SetPoint("TOP", upperLeftEmblem, "BOTTOM", 0, 0)
+    bottomLeftEmblem:SetTexCoord(0.5, 1, 0, 1)
+    bottomLeftEmblem:SetTexture(tabardEmblemLower)
+
+    local bottomRightEmblem = emblem:CreateTexture("$parentEmblemBR", "BORDER", nil, -1)
+    bottomRightEmblem:SetSize(width, height / 2)
+    bottomRightEmblem:SetPoint("LEFT", bottomLeftEmblem, "RIGHT", 0, 0)
+    bottomRightEmblem:SetTexCoord(1, 0.5, 0, 1)
+    bottomRightEmblem:SetTexture(tabardEmblemLower)
+
+
+    return emblem
+end

@@ -1,8 +1,8 @@
 ## Interface: 20503
 ## Title: |cFF4068E0|| - |rRaid|r
 ## Author: Elerae-Golemagg
-## Version: 1.0.0
-## SavedVariablesPerCharacter: Bohemian_RaidConfig, Bohemian_RaidStats
+## Version: 2.0.0
+## SavedVariablesPerCharacter: Bohemian_RaidConfig
 ## Dependencies: Bohemian
 ## LoadOnDemand: 0
 

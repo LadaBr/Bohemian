@@ -524,9 +524,9 @@ function E:CheckForWipe(fullName, since)
 end
 
 function E:WipeLog(fullName, time)
-    if not CurrentDKPLog.current then
+    if not CurrentDKPLog.current or not CurrentDKPLog.current.data then
         C:AddToUpdateQueue(function(id)
-            if CurrentDKPLog.current then
+            if CurrentDKPLog.current and CurrentDKPLog.current.data then
                 C:RemoveFromUpdateQueue(id)
                 E:WipeLog(fullName, time)
             end

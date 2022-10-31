@@ -92,3 +92,7 @@ function E:GetGuildMaster()
         end
     end
 end
+
+function E:GetGuildMemberNote(fullName)
+    return self.guildRoster[fullName] and self.guildRoster[fullName][7] or ""
+end

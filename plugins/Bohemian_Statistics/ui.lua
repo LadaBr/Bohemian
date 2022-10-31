@@ -77,7 +77,7 @@ function E:CreateStatisticsFrame()
     arena5v5HeaderTexture:SetPoint("RIGHT", -5, 0)
     WhoFrameColumn_SetWidth(arena5v5Header, 60);
     arena5v5Header.sortType = "arena5v5";
-
+    local lastFrame = arena5v5Header
     local module = C:GetModule("Bohemian_Reputation")
     if module then
         local repHeader = C:CreateFrame("BUTTON", "$parentRepHeader", statisticsFrame, "GuildFrameColumnHeaderTemplate")
@@ -89,7 +89,18 @@ function E:CreateStatisticsFrame()
         repHeaderTexture:SetScale(0.25);
         WhoFrameColumn_SetWidth(repHeader, 30);
         repHeader.sortType = "rep";
+        lastFrame = repHeader
     end
+
+    local hoursHeader = C:CreateFrame("BUTTON", "$parentHoursHeader", statisticsFrame, "GuildFrameColumnHeaderTemplate")
+    hoursHeader:SetPoint("LEFT", lastFrame, "RIGHT", -2, 0)
+    hoursHeader:SetScript("OnClick", sortFn)
+    local hoursHeaderTexture = hoursHeader:CreateTexture("$parentTexture", "BORDER")
+    hoursHeaderTexture:SetTexture(237538)
+    hoursHeaderTexture:SetPoint("CENTER", 0, -2)
+    hoursHeaderTexture:SetScale(0.25);
+    WhoFrameColumn_SetWidth(hoursHeader, 50);
+    hoursHeader.sortType = "hours";
 
 
     for i = 1, GUILDMEMBERS_TO_DISPLAY do
@@ -98,7 +109,7 @@ function E:CreateStatisticsFrame()
         local highlight = statisticsRow:CreateTexture("$parentHighlight", "ARTWORK")
         highlight:SetTexture("Interface\\FriendsFrame\\UI-FriendsFrame-HighlightBar")
         highlight:SetPoint("TOPLEFT", 5, -2)
-        highlight:SetSize(406,16)
+        highlight:SetSize(453,16)
         statisticsRow:SetHighlightTexture(highlight)
         if i == 1 then
             statisticsRow:SetPoint("TOPLEFT", GuildFrame, 3, -82)
@@ -136,11 +147,19 @@ function E:CreateStatisticsFrame()
         arena5v5Col:SetJustifyH("RIGHT")
         arena5v5Col:SetSize(60, 14)
         arena5v5Col:SetPoint("LEFT", arena3v3Col, "RIGHT", 0, 0)
+        local lastFrameCol = arena5v5Col
+        if module then
+            local repCol = statisticsRow:CreateFontString("$parentRep", "BORDER", "GameFontHighlightSmall")
+            repCol:SetJustifyH("RIGHT")
+            repCol:SetSize(26, 14)
+            repCol:SetPoint("LEFT", arena5v5Col, "RIGHT", 0, 0)
+            lastFrameCol = repCol
+        end
 
-        local repCol = statisticsRow:CreateFontString("$parentRep", "BORDER", "GameFontHighlightSmall")
-        repCol:SetJustifyH("RIGHT")
-        repCol:SetSize(26, 14)
-        repCol:SetPoint("LEFT", arena5v5Col, "RIGHT", 0, 0)
+        local hoursCol = statisticsRow:CreateFontString("$parentHours", "BORDER", "GameFontHighlightSmall")
+        hoursCol:SetJustifyH("RIGHT")
+        hoursCol:SetSize(50, 14)
+        hoursCol:SetPoint("LEFT", lastFrameCol, "RIGHT", 0, 0)
     end
 end
 
@@ -240,6 +259,7 @@ function E:UpdateStatisticRows()
             local arena3v3 = _G["GuildFrameStatisticsFrameRow"..i.."Arena3v3"]
             local arena5v5 = _G["GuildFrameStatisticsFrameRow"..i.."Arena5v5"]
             local rep = _G["GuildFrameStatisticsFrameRow"..i.."Rep"]
+            local hours = _G["GuildFrameStatisticsFrameRow"..i.."Hours"]
             row:Show()
             nameCol:SetText(C:AddClassColorToName(member.name))
             achievementCol:SetText(member.achievement == 0 and "-" or member.achievement)
@@ -247,7 +267,14 @@ function E:UpdateStatisticRows()
             arena2v2:SetText(member.arena2v2 == 0 and "-" or member.arena2v2)
             arena3v3:SetText(member.arena3v3 == 0 and "-" or member.arena3v3)
             arena5v5:SetText(member.arena5v5 == 0 and "-" or member.arena5v5)
-            rep:SetText(member.rep == 0 and "-" or member.rep)
+            if rep then
+                rep:SetText(member.rep == 0 and "-" or member.rep)
+            end
+            if hours then
+                hours:SetText(member.hours == 0 and "-" or round(member.hours / 60, 1))
+            end
+
+
             if member.online then
                 nameCol:SetAlpha(1)
             else

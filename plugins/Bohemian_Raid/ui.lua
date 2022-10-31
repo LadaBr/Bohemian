@@ -9,14 +9,14 @@ local C = E.CORE
 RAID_INFO_FRAME_OFFSET_X = 0
 
 local timers = {
-    { index = "active", name = "Active", title = "Active", order = 1 },
-    { index = "regen", name = "Regen", title = "Regen", order = 2 },
-    { index = "cc", name = "CC", title = "CC", order = 3 },
-    { index = "dead", name = "Dead", title = "Dead", order = 4 },
-    { index = "idle", name = "Idle", title = "Idle", order = 5 },
-    { index = "idle_ooc", name = "IdleOOC", title = "Idle (OOC)", order = 6 },
-    { index = "afk", name = "AFK", title = "Away", order = 7 },
-    { index = "offline", name = "Offline", title = "Offline", order = 8 },
+    --{ index = "active", name = "Active", title = "Active", order = 1 },
+    --{ index = "regen", name = "Regen", title = "Regen", order = 2 },
+    --{ index = "cc", name = "CC", title = "CC", order = 3 },
+    --{ index = "dead", name = "Dead", title = "Dead", order = 4 },
+    --{ index = "idle", name = "Idle", title = "Idle", order = 5 },
+    --{ index = "idle_ooc", name = "IdleOOC", title = "Idle (OOC)", order = 6 },
+    --{ index = "afk", name = "AFK", title = "Away", order = 7 },
+    --{ index = "offline", name = "Offline", title = "Offline", order = 8 },
 }
 
 local textures = {
@@ -49,11 +49,39 @@ function E:AddConfigFrames(f)
     font:SetSize(200, 14)
     font:SetPoint("RIGHT", toggleMD, "LEFT", 0, 0)
     font:SetText("Announce Misdirection")
+
+    local toggleRaidHours = C:CreateFrame("CheckButton", "$parentRaidHours", f, "UICheckButtonTemplate");
+    toggleRaidHours:SetSize(22, 22)
+    toggleRaidHours:SetPoint("TOPLEFT", toggleMD, "BOTTOMLEFT", 0, 0)
+    toggleRaidHours:SetChecked(Bohemian_RaidConfig.raidHours)
+
+    font = toggleRaidHours:CreateFontString("$parentText", "ARTWORK", "GameFontNormal")
+    font:SetJustifyH("LEFT")
+    font:SetSize(200, 14)
+    font:SetPoint("RIGHT", toggleRaidHours, "LEFT", 0, 0)
+    font:SetText("Collect Raid Hours")
+
+    local title, _ = C:AddConfigEditBox(f, {"TOPLEFT", font, "BOTTOMLEFT", 0, -10}, "GuildRaidMinimalCount", "Guild Raid members", Bohemian_RaidConfig.guildRaidMemberRatio, "%")
+
+    local name = f:GetName()
+    f.okay = function()
+        Bohemian_RaidConfig.announceParry = _G[name.."AnnounceParry"]:GetChecked()
+        Bohemian_RaidConfig.announceMD = _G[name.."AnnounceMD"]:GetChecked()
+        Bohemian_RaidConfig.raidHours = _G[name.."RaidHours"]:GetChecked()
+        Bohemian_RaidConfig.guildRaidMemberRatio = tonumber(_G[name.."EditBoxGuildRaidMinimalCount"]:GetText())
+    end
+
+    f.cancel = function()
+        _G[name.."AnnounceParry"]:SetChecked(Bohemian_RaidConfig.announceParry)
+        _G[name.."AnnounceMD"]:SetChecked(Bohemian_RaidConfig.announceMD)
+        _G[name.."RaidHours"]:SetChecked(Bohemian_RaidConfig.raidHours)
+        _G[name.."EditBoxGuildRaidMinimalCount"]:SetText(Bohemian_RaidConfig.guildRaidMemberRatio)
+    end
 end
 
 function E:AddRaidButtonFrame()
     local tooltipFrame = C:CreateFrame("Frame", "$parentTooltip", RaidFrame, BackdropTemplateMixin and "BackdropTemplate" or nil)
-    tooltipFrame:SetSize(215, 165)
+    tooltipFrame:SetSize(178, 50)
     tooltipFrame:SetPoint("LEFT", UIParent, 500, 200)
     tooltipFrame:SetFrameStrata("TOOLTIP")
     tooltipFrame:SetBackdrop({
@@ -71,7 +99,7 @@ function E:AddRaidButtonFrame()
         if i == 1 then
             resist:SetPoint("TOPLEFT", 8, -10)
         else
-            resist:SetPoint("TOP", prevResist, "BOTTOM", 0, 0)
+            resist:SetPoint("LEFT", prevResist, "RIGHT", 0, 0)
         end
 
         local texture = resist:CreateTexture("$parentTexture", "BACKGROUND")
@@ -105,7 +133,6 @@ function E:AddRaidButtonFrame()
         info:SetScript("OnEnter", function(self)
             if self.tooltip then
                 E.selectedMember = self.tooltip
-                E:UpdateTimers()
                 E:UpdateResistInfo(self.tooltip.fullName)
                 tooltipFrame:SetPoint("LEFT", _G["RaidGroupButton" .. i .. "Info"], "RIGHT", 3, 0)
                 tooltipFrame:Show()
@@ -118,45 +145,6 @@ function E:AddRaidButtonFrame()
         local texture = info:CreateTexture("$parentTexture", "ARTWORK")
         texture:SetAllPoints(true)
         texture:SetTexture(134331)
-    end
-
-    local session = tooltipFrame:CreateFontString("$parentTimerSession", "BORDER", "GameFontNormalSmall")
-    session:SetText("Session")
-    session:SetPoint("BOTTOMLEFT", 50, 15)
-    local sessionValue = tooltipFrame:CreateFontString("$parentTimerSessionValue", "BORDER", "GameFontHighlightSmall")
-    sessionValue:SetText("-")
-    sessionValue:SetPoint("LEFT", session, "RIGHT", 59, 0)
-    sessionValue:SetWidth(100)
-    sessionValue:SetJustifyH("LEFT")
-
-    local prevTimer
-    for i, timer in ipairs(timers) do
-        local textFrame = C:CreateFrame("Frame", "$parentTimer" .. timer.name, tooltipFrame)
-        textFrame:SetSize(55, 9)
-        if i == 1 then
-            textFrame:SetPoint("TOPLEFT", 50, -13)
-        else
-            textFrame:SetPoint("TOPLEFT", prevTimer, "BOTTOMLEFT", 0, -5)
-        end
-        local text = textFrame:CreateFontString("$parentText", "BORDER", "GameFontNormalSmall")
-        text:SetText(timer.title)
-        text:SetWidth(55)
-        text:SetJustifyH("LEFT")
-        text:SetPoint("LEFT", 0, 0)
-
-        local textValue = textFrame:CreateFontString("$parentValue", "BORDER", "GameFontHighlightSmall")
-        textValue:SetText("-")
-        textValue:SetPoint("LEFT", text, "RIGHT", 5, 0)
-
-        textValue:SetJustifyH("RIGHT")
-        textValue:SetWidth(45)
-
-        local valuePrc = textFrame:CreateFontString("$parentValuePrc", "BORDER", "GameFontHighlightSmall")
-        valuePrc:SetText("-")
-        valuePrc:SetPoint("LEFT", textValue, "RIGHT", 5, 0)
-        valuePrc:SetWidth(40)
-        valuePrc:SetJustifyH("RIGHT")
-        prevTimer = textFrame
     end
 end
 
@@ -208,38 +196,6 @@ function E:GetSessionDuration(fullName)
     return E.currentSession and E.currentSession.stats and E.currentSession.stats[fullName] and E.currentSession.stats[fullName].timers.session
 end
 
-function E:UpdateTimers()
-    if not E.selectedMember then
-        return
-    end
-    for _, timer in pairs(timers) do
-        local name = timer.name
-        local frame = _G["RaidFrameTooltipTimer" .. name]
-        local textValue = _G["RaidFrameTooltipTimer" .. name .. "Value"]
-        local textValuePrc = _G["RaidFrameTooltipTimer" .. name .. "ValuePrc"]
-        local value
-        if E.selectedMember.fullName and E.currentSession and E.currentSession.stats[E.selectedMember.fullName] then
-            value = E.currentSession.stats[E.selectedMember.fullName].timers[timer.index]
-        end
-        if textValue then
-            if value and value > 0 and E:GetSessionDuration(E.selectedMember.fullName) > 0 then
-                textValuePrc:SetText(E:TimeToPercent(value, E.selectedMember.fullName))
-                textValue:SetText(E:TimeToReadable(value))
-                frame:SetAlpha(1)
-            else
-                textValue:SetText("-")
-                textValuePrc:SetText("-")
-                frame:SetAlpha(0.75)
-            end
-
-        end
-    end
-    if E.selectedMember.fullName and E.currentSession and E.currentSession.stats[E.selectedMember.fullName] then
-        RaidFrameTooltipTimerSessionValue:SetText(C:display_time(E.currentSession.stats[E.selectedMember.fullName].timers.session))
-    else
-        RaidFrameTooltipTimerSessionValue:SetText("-")
-    end
-end
 
 function E:UpdateResistInfo(name)
     for i = 1, 5 do
@@ -287,26 +243,19 @@ function E:UpdateRaidFrame(i, data)
             classButtonTexture:SetTexCoord(unpack(coords))
             classButtonTexture:Show()
         end
-        _G["RaidGroupButton" .. i.."Info"]:Show()
     else
         classButtonTexture:Hide()
-        _G["RaidGroupButton" .. i.."Info"]:Hide()
+    end
+
+    if data and E.resistInfo[data.fullName] then
+        infoButton:Show()
+    else
+        infoButton:Hide()
     end
 end
 
 RAID_INFO_FRAME_ROW_HEIGHT = 14
 RAID_INFO_ROWS = 25
-RAID_INFO_FRAME_WIDTH = 60
-
-function E:ResizeRaidInfoFrame(width)
-    RaidInfoFrame:SetWidth(RaidInfoFrame:GetWidth() + width)
-    RaidInfoScrollFrame:SetWidth(RaidInfoScrollFrame:GetWidth() + width)
-    RaidInfoDetailHeader:SetWidth(RaidInfoDetailHeader:GetWidth() + width)
-    for i = 1, 10 do
-        _G["RaidInfoInstance" .. i]:SetWidth(_G["RaidInfoInstance" .. i]:GetWidth() + width)
-    end
-    C:SetFrameOffsetX(RaidInfoIDLabel, width)
-end
 
 function E:AddRaidInfoFrame()
     local f = C:CreateFrame("Frame", "$parentStats", RaidInfoFrame, BackdropTemplateMixin and "BackdropTemplate" or nil)
@@ -318,7 +267,6 @@ function E:AddRaidInfoFrame()
     --f:Hide()
     RaidInfoScrollFrameScrollBar:Hide()
     RaidInfoScrollFrameScrollBar:SetPoint("TOPLEFT", RaidInfoScrollFrame, "TOPRIGHT", 8, -3);
-    E:ResizeRaidInfoFrame(RAID_INFO_FRAME_WIDTH)
     RaidInfoFrame:HookScript("OnShow", function()
         f:Show()
     end)
@@ -331,7 +279,7 @@ function E:AddRaidInfoFrame()
 
     f:SetPoint("TOPRIGHT", RaidInfoFrame, "TOPLEFT", 1, 0)
     E:FixRaidInfoFramePosition()
-    f:SetSize(805, 426)
+    f:SetSize(305, 426)
     f:SetBackdrop(BACKDROP_DIALOG_32_32)
     local font = RaidFrame:CreateFontString("$parentSessionDuration", "BORDER", "GameFontHighlightSmall")
     font:SetPoint("TOPLEFT", 80, -6)
@@ -415,7 +363,7 @@ function E:AddRaidInfoFrame()
         else
             row:SetPoint("TOPLEFT", prevRow, "BOTTOMLEFT", 0, 0)
         end
-        row:SetSize(760, RAID_INFO_FRAME_ROW_HEIGHT)
+        row:SetSize(260, RAID_INFO_FRAME_ROW_HEIGHT)
         local prevCol
         for _, column in ipairs(columns) do
             local font = row:CreateFontString("$parentCol" .. _, "BORDER", "GameFontHighlightSmall")
@@ -472,66 +420,6 @@ function E:AddRaidInfoFrame()
             E:UpdateRaidInfoFrame(true)
         end)
     end)
-
-    local history = C:CreateFrame("Frame", "$parentHistoryDropdown", f, "UIDropDownMenuTemplate")
-    history:SetPoint("TOPLEFT", 6, -11)
-    UIDropDownMenu_SetWidth(history, 150)
-    history:SetFrameLevel(1000)
-    history.value = "Current"
-
-    local initMenu = function()
-        local selectedValue = UIDropDownMenu_GetSelectedValue(history);
-        local info = UIDropDownMenu_CreateInfo();
-
-        info.text = "Current"
-        info.func = function()
-            history:SetValue("Current")
-        end;
-        info.value = "Current"
-        if ( info.value == selectedValue ) then
-            info.checked = 1;
-        else
-            info.checked = nil;
-        end
-        UIDropDownMenu_AddButton(info);
-
-        local sessions = E:GetAllSessions()
-        table.sort(sessions, function(a, b) return a.created < b.created end)
-        for _, session in ipairs(sessions) do
-            info.text = session.name.." - "..date('%Y/%m/%d %H:%M:%S', session.created);
-            info.func = function(self)
-                history:SetValue(self.value)
-            end;
-            info.value = session
-            if ( info.value == selectedValue ) then
-                info.checked = 1;
-            else
-                info.checked = nil;
-            end
-            UIDropDownMenu_AddButton(info);
-        end
-
-    end
-    history.SetValue = function (self, value)
-        self.value = value
-        E.showedSession = value ~= "Current" and value
-        UIDropDownMenu_SetSelectedValue(self, value);
-        E:UpdateRaidInfoFrame()
-    end
-    UIDropDownMenu_Initialize(history, initMenu);
-    UIDropDownMenu_SetSelectedValue(history, history.value);
-end
-
-function E:GetAllSessions()
-    local tmp = {}
-    for _, instance in pairs(Bohemian_RaidStats) do
-        for _, difficulty in pairs(instance) do
-            for _, session in pairs(difficulty) do
-                tmp[#tmp + 1] = session
-            end
-        end
-    end
-    return tmp
 end
 
 function E:FormatValue(value, fullName)
@@ -546,15 +434,16 @@ function E:UpdateRaidInfoFrame(skipSort)
     FauxScrollFrame_Update(E.raidInfoFrame.scroll, #E.sortedPlayers, RAID_INFO_ROWS, RAID_INFO_FRAME_ROW_HEIGHT, nil, nil, nil);
     local showScrollBar = E.raidInfoFrame.scroll:IsVisible()
     if not showScrollBar then
-        E.raidInfoFrame:SetWidth(782)
+        E.raidInfoFrame:SetWidth(277)
     else
-        E.raidInfoFrame:SetWidth(805)
+        E.raidInfoFrame:SetWidth(300)
     end
     E:FixRaidInfoFramePosition()
     if not skipSort then
         E:SortPlayers()
     end
     E:UpdateRaidInfoRows()
+    E:RaidGroupFrame_Update()
 end
 
 function E:FixRaidInfoFramePosition()
@@ -660,19 +549,52 @@ function E:UpdateRaidInfoRows()
                 local resist = _G["RaidInfoRow" .. i .. "Col" .. (1 + j)]
                 resist:SetText(resistValue and E:GetResistColor(resistValue) or "-")
             end
-            local timers = member.stats and member.stats.timers or {}
-
-            _G["RaidInfoRow" .. i .. "Col7"]:SetText(E:FormatValue(timers.active, memberName))
-            _G["RaidInfoRow" .. i .. "Col8"]:SetText(E:FormatValue(timers.regen, memberName))
-            _G["RaidInfoRow" .. i .. "Col9"]:SetText(E:FormatValue(timers.cc, memberName))
-            _G["RaidInfoRow" .. i .. "Col10"]:SetText(E:FormatValue(timers.dead, memberName))
-            _G["RaidInfoRow" .. i .. "Col11"]:SetText(E:FormatValue(timers.idle, memberName))
-            _G["RaidInfoRow" .. i .. "Col12"]:SetText(E:FormatValue(timers.idle_ooc, memberName))
-            _G["RaidInfoRow" .. i .. "Col13"]:SetText(E:FormatValue(timers.afk, memberName))
-            _G["RaidInfoRow" .. i .. "Col14"]:SetText(E:FormatValue(timers.offline, memberName))
+            --local timers = member.stats and member.stats.timers or {}
+            --
+            --_G["RaidInfoRow" .. i .. "Col7"]:SetText(E:FormatValue(timers.active, memberName))
+            --_G["RaidInfoRow" .. i .. "Col8"]:SetText(E:FormatValue(timers.regen, memberName))
+            --_G["RaidInfoRow" .. i .. "Col9"]:SetText(E:FormatValue(timers.cc, memberName))
+            --_G["RaidInfoRow" .. i .. "Col10"]:SetText(E:FormatValue(timers.dead, memberName))
+            --_G["RaidInfoRow" .. i .. "Col11"]:SetText(E:FormatValue(timers.idle, memberName))
+            --_G["RaidInfoRow" .. i .. "Col12"]:SetText(E:FormatValue(timers.idle_ooc, memberName))
+            --_G["RaidInfoRow" .. i .. "Col13"]:SetText(E:FormatValue(timers.afk, memberName))
+            --_G["RaidInfoRow" .. i .. "Col14"]:SetText(E:FormatValue(timers.offline, memberName))
             row:Show()
         else
             row:Hide()
         end
+    end
+end
+
+function E:AdjustDetailFrame()
+    local detailNoteLabel = _G["GuildMemberDetailNoteLabel"]
+    local detailFrame = _G["GuildMemberDetailFrame"]
+
+    f = C:CreateFrame("Frame", "DetailFrameRaidHoursFrame", detailFrame);
+    f:SetPoint("TOPLEFT", detailNoteLabel, "BOTTOMLEFT", 0, -4)
+    f:SetSize(60, 14)
+
+    C:IncreaseDetailFrameHeight(24)
+
+    font = f:CreateFontString("GuildMemberDetailFrameRaidHours", "ARTWORK", "GameFontNormalSmall")
+    font:SetWidth(60)
+    font:SetPoint("LEFT")
+    font:SetJustifyH("LEFT")
+    font:SetText("Raid Hours:")
+
+    font2 = f:CreateFontString("GuildMemberDetailFrameRaidHoursValue", "ARTWORK", "GameFontHighlightLeft")
+    font2:SetWidth(60)
+    font2:SetPoint("LEFT", font, "RIGHT", 0, 0)
+    font2:SetJustifyH("LEFT")
+    font2:SetText("-")
+
+    _G["GuildMemberDetailOfficerNoteLabel"]:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, -8)
+end
+
+function E:UpdateDetailFrame()
+    local _, _, _, _, _, _, note, _, _ = GetGuildRosterInfo(GetGuildRosterSelection());
+    if (GetGuildRosterSelection() > 0) then
+        local hours = E:GetReadableRaidHours(self:NoteToRaidHours(note), 2)
+        GuildMemberDetailFrameRaidHoursValue:SetText(hours > 0 and hours or "-")
     end
 end

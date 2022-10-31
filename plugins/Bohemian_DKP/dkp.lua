@@ -125,7 +125,8 @@ function E:SaveDKP(index, value, announceChannel, reason, isLocal)
 end
 function E:SetDKPSilent(fullName, index, value)
     local valueStr = string.format("%05d", value)
-
+    local note = C:GetGuildMemberNote(fullName)
+    valueStr = string.find(note, "^0*%d+") and note:gsub("^0*%d+", valueStr) or valueStr
     GuildRosterSetPublicNote(index, valueStr)
     self.roster[fullName] = value
 end
@@ -136,7 +137,7 @@ function E:NoteDKPToNumber(note)
     if note == nil or note == '' then
         return
     end
-    local value = tonumber(note:match("0*(%d+)"))
+    local value = tonumber(note:match("0+(%d+)"))
     if note:sub(1, 1) == "-" then
         value = value * -1
     end

@@ -195,7 +195,6 @@ E.MODULES = {
     end,
     Bohemian_Raid = function(module)
         local fn = function(module)
-            module:ResizeRaidInfoFrame(-RAID_INFO_FRAME_WIDTH)
             RaidInfoFrameStats:SetPoint("TOPRIGHT", RaidInfoFrame, "TOPLEFT", -3, 0)
             RaidInfoFrameStats:SetHeight(RaidInfoFrameStats:GetHeight() - 2)
             RaidFrameSessionDuration:SetPoint("TOPLEFT", 8, -7)
