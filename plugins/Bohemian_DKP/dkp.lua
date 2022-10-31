@@ -226,9 +226,9 @@ function E:SetSelectedDifficultyBossRewards(value)
 end
 
 function E:GetCurrentBossRewards(bossName)
-    local _, _, difficulty = GetInstanceInfo()
+    local instanceName, _, difficulty = GetInstanceInfo()
     local config = E:GetDifficultyBossRewards(difficulty) or {}
     local defaultConfig = E:GetDifficultyBossRewards(0) or {}
-    local reward = (config and config[bossName]) or (defaultConfig and E:GetDifficultyBossRewards(0)[bossName])
+    local reward = (config and config[bossName]) or (defaultConfig and defaultConfig[bossName]) or (config and config[instanceName]) or (defaultConfig and defaultConfig[instanceName])
     return reward
 end
