@@ -41,7 +41,7 @@ end
 function E:GetGuildMembersInRaid()
     local members = {}
     local total = 0
-    for name, member in pairs(C.raidMembers) do
+    for name, member in pairs(E.raidMembers) do
         if C.guildRoster[name] then
             members[name] = member
             total = total + 1
