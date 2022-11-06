@@ -6,8 +6,7 @@
 
 local AddonName, E = ...
 Bohemian_RaidConfig = {}
-E.raidMembers = {}
-E.raidMembersIndex = {}
+
 E.resistInfo = {}
 E.INTERVAL = 2
 E.SESSION_INTERVAL = 10
@@ -22,7 +21,6 @@ E.GCD = 0
 E.currentResist = {}
 E.savedInstances = {}
 E.lastSharedResist = {}
-E.raidMembersOffline = {}
 E.showedSession = nil
 Bohemian_RaidStats = {}
 
@@ -54,36 +52,11 @@ function E:LoadAddon()
     E:Hook()
 end
 
-function E:CacheRaid()
-    local members = GetNumGroupMembers();
-    local realmName = GetNormalizedRealmName()
-    local newRaidMembers = {}
-    local newRaidMembersIndex = {}
-    local newRaidMembersOffline = {}
-    for i = 1, members do
-        local name, _, _, _, class, fileName, _, online, _, role = GetRaidRosterInfo(i)
-        if name then
-            name, realm = UnitFullName(name)
-            if not realm or #realm <= 0 then
-                realm = realmName
-            end
-            local fullName = name .. "-" .. realm
-            newRaidMembers[fullName] = { name = name, realm = realm, fullName = fullName, fileName = fileName, class = class, online = online, role = role }
-            newRaidMembersIndex[i] = fullName
-            if not online then
-                newRaidMembersOffline[fullName] = newRaidMembers[fullName]
-            end
-        end
-    end
-    E.raidMembers = newRaidMembers
-    E.raidMembersIndex = newRaidMembersIndex
-    E.raidMembersOffline = newRaidMembersOffline
-end
 
 function E:ForRaidMembers(cb)
     for i = 1, MAX_RAID_MEMBERS do
-        local name = E.raidMembersIndex[i]
-        cb(i, name and E.raidMembers[name] or nil)
+        local name = C.raidMembersIndex[i]
+        cb(i, name and C.raidMembers[name] or nil)
     end
 end
 
@@ -187,6 +160,9 @@ end
 function E:NoteToRaidHours(note)
     local dkpModule = C:GetModule("Bohemian_DKP")
     local pattern = "(%d+)"
+    if not note then
+        return
+    end
     if dkpModule then
         if string.find(note, " ") then
             pattern = "0+%d+ " .. pattern
@@ -201,29 +177,6 @@ end
 function E:GetMemberRaidHours(name)
     local note = C:GetGuildMemberNote(name)
     return E:NoteToRaidHours(note)
-end
-
-function E:GetGuildMembersInRaid()
-    local members = {}
-    local total = 0
-    for name, member in pairs(E.raidMembers) do
-        if C.guildRoster[name] then
-            members[name] = member
-            total = total + 1
-        end
-    end
-    return members, total
-end
-
-function E:IsGuildRaid()
-    local name, type, difficulty, difficultyName, maxPlayers = GetInstanceInfo()
-    if type == "raid" then
-        local members, total = E:GetGuildMembersInRaid()
-        if total / maxPlayers >= Bohemian_RaidConfig.guildRaidMemberRatio / 100 then
-            return true
-        end
-    end
-    return false
 end
 
 RAID_TIME_COLLECT_INTERVAL = 60
@@ -247,8 +200,8 @@ function E:StartRaidHours()
         if E.timeForCollect <= 0 then
             E.timeForCollect = RAID_TIME_COLLECT_INTERVAL
             local myZone = GetInstanceInfo()
-            for index, memberName in ipairs(E.raidMembersIndex) do
-                local member = E.raidMembers[memberName]
+            for index, memberName in ipairs(C.raidMembersIndex) do
+                local member = C.raidMembers[memberName]
                 local unitId = "raid"..index
                 local isAFK = UnitIsAFK(unitId)
                 local inCombat = UnitAffectingCombat(unitId)
@@ -264,5 +217,8 @@ function E:StartRaidHours()
 end
 
 function E:GetReadableRaidHours(hours, decimals)
+    if hours == nil then
+        return 0
+    end
     return round(hours / 60, decimals or 1)
 end

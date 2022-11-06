@@ -190,6 +190,11 @@ end
 function E:StartRosterChangeDetection()
     C:AddToUpdateQueue(function(id, elapsed)
         if E.checkRoster and E.cacheCooldown <= 0 then
+
+            local guildName = C:GetGuildName()
+            if not guildName then
+                return
+            end
             E.checkRoster = false
             local roster = {}
             for _, data in pairs(C.guildRoster) do
@@ -210,7 +215,6 @@ function E:StartRosterChangeDetection()
                     end
                 end)
             end
-            local guildName = C:GetGuildName()
             Bohemian_Characters.guilds[guildName] = roster
         end
         if E.cacheCooldown > 0 then

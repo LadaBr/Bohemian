@@ -34,7 +34,12 @@ Bohemian.RegisterModule(AddonName, E, function()
     E:HookLootFrame()
 
     E:AddConfigFrames(E.CORE:CreateModuleInterfaceConfig("Auction"))
-
+    if IsAddOnLoaded("AdiBags") then
+        E:HookAdiBags()
+    end
+    if IsAddOnLoaded("XLoot") then
+        E:HookXLoot()
+    end
 
 end)
 

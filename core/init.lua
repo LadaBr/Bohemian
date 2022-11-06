@@ -23,6 +23,7 @@ E:RegisterEvent('ADDON_LOADED')
 E:RegisterEvent('CHAT_MSG_ADDON')
 E:RegisterEvent('GUILD_ROSTER_UPDATE')
 E:RegisterEvent('PLAYER_ENTERING_WORLD')
+E:RegisterEvent('GROUP_ROSTER_UPDATE')
 EventFrame:RegisterEvent('PLAYER_LOGOUT')
 
 

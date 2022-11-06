@@ -39,7 +39,7 @@ function A:COMBAT_LOG_EVENT_UNFILTERED(...)
             local _, _, _, suffix = string.find (subevent, "(.-)_(.+)")
             if (suffix == "MISSED") then
                 if (type == "PARRY") then
-                    if E.raidMembers[sourceName] then
+                    if C.raidMembers[sourceName] then
                         SendChatMessage(format("%s was parried by %s.", sourceName, destName), "RAID")
                     end
 
@@ -52,7 +52,7 @@ function A:COMBAT_LOG_EVENT_UNFILTERED(...)
         local _, subevent, _, _, sourceName, _, _, _, destName, _, _, _, spellName = CombatLogGetCurrentEventInfo()
         if subevent == "SPELL_CAST_SUCCESS" then
             if spellName == "Misdirection" or spellName == "Tricks of the Trade" then
-                if E.raidMembers[sourceName] then
+                if C.raidMembers[sourceName] then
                     SendChatMessage(format("%s is misdirecting to %s.", sourceName, destName), "RAID")
                 end
             end
@@ -66,13 +66,8 @@ function A:COMBAT_LOG_EVENT_UNFILTERED(...)
 end
 
 function A:GROUP_ROSTER_UPDATE()
-    E:CacheRaid()
     E:ShareInfo()
     E:UpdateRaidInfoFrame()
-end
-
-function A:ENCOUNTER_END()
-    E:RequestRaidInfo()
 end
 
 function A:READY()
@@ -107,7 +102,7 @@ function A:READY_CHECK_FINISHED()
         E:GetZone()
         if E.zone == "Den of Mortal Delights" then
             SendChatMessage("Ready check for Mother Shahraz", E:GetInstanceChannel())
-            for name, member in pairs(E.raidMembers) do
+            for name, member in pairs(C.raidMembers) do
                 local resistInfo = E.resistInfo[name]
                 if resistInfo then
                     if resistInfo[6] < 240 and member.role ~= "MAINTANK" then
@@ -143,7 +138,7 @@ function A:PLAYER_ENTERING_WORLD(isLogin, isReload)
 end
 
 function A:ZONE_CHANGED_NEW_AREA()
-    if IsInInstance() and IsInRaid(LE_PARTY_CATEGORY_HOME) and not IsInRaid(LE_PARTY_CATEGORY_INSTANCE) and E:IsGuildRaid() then
+    if IsInInstance() and IsInRaid(LE_PARTY_CATEGORY_HOME) and not IsInRaid(LE_PARTY_CATEGORY_INSTANCE) and C:IsGuildRaid() then
         E:Print("This raid counts as a guild run.")
         if UnitIsGroupLeader("player") then
             E:StartRaidHours()

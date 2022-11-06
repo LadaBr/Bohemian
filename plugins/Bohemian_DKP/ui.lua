@@ -535,10 +535,10 @@ end
 
 local difficulties = {
     { 0, "Any" },
-    { 1, "5 Player / 10 Player / 40 Player" },
-    { 2, "5 Player (Heroic) / 25 Player" },
-    { 3, "10 Player (Heroic)" },
-    { 4, "25 Player (Heroic)" },
+    { 1, "5 Player" },
+    { 2, "5 Player (Heroic)" },
+    { 3, "10 Player" },
+    { 4, "25 Player" },
 }
 
 function E:AddConfigFrames(f)

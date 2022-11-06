@@ -26,7 +26,6 @@ end
 
 function E:HookLootItemFrame(frame, index)
     frame:HookScript("OnClick", function()
-
         if (E:CanStartAuctionWithClick()) then
             local numLootItems = GetNumLootItems()
             local numLootToShow = LOOTFRAME_NUMBUTTONS;
@@ -34,16 +33,19 @@ function E:HookLootItemFrame(frame, index)
                 numLootToShow = numLootToShow - 1; -- make space for the page buttons
             end
             local slot = (numLootToShow * (LootFrame.page - 1)) + index;
-            local texture, item, quantity, currencyID, quality, _, _, _, _ = GetLootSlotInfo(slot);
-            if ( currencyID ) then
-                item, texture, quantity, quality = CurrencyContainerUtil.GetCurrencyContainerInfo(currencyID, quantity, item, texture, quality);
-            end
-
-            local itemLink = GetLootSlotLink(slot)
-            E:StartAuction(itemLink, quantity, frame)
-
+            E:StartAuctionFromLoot(slot, frame)
         end
     end)
+end
+
+function E:StartAuctionFromLoot(slot, frame)
+    local texture, item, quantity, currencyID, quality, _, _, _, _ = GetLootSlotInfo(slot);
+    if ( currencyID ) then
+        item, texture, quantity, quality = CurrencyContainerUtil.GetCurrencyContainerInfo(currencyID, quantity, item, texture, quality);
+    end
+
+    local itemLink = GetLootSlotLink(slot)
+    E:StartAuction(itemLink, quantity, frame)
 end
 
 
@@ -56,3 +58,40 @@ function E:HookContainerItemFrame(frame)
     end)
 end
 
+function E:HookAdiBags()
+    local i = 1
+    while true do
+        local adiBagsFrame = _G["AdiBagsItemButton" .. i]
+        if not adiBagsFrame then
+            return
+        end
+        E:HookContainerItemFrame(adiBagsFrame)
+        i = i + 1
+    end
+end
+
+local hookedFrames = {}
+function E:HookXLoot()
+    local i = 1
+    while true do
+        local frame = _G["XLootFrameButton" .. i]
+
+        if not frame then
+            return
+        end
+        if not hookedFrames[frame] then
+            hookedFrames[frame] = true
+            E:HookXLootFrame(frame, i)
+        end
+
+        i = i + 1
+    end
+end
+
+function E:HookXLootFrame(frame, index)
+    frame:HookScript("OnClick", function()
+        if (E:CanStartAuctionWithClick()) then
+            E:StartAuctionFromLoot(index, frame.frame_item)
+        end
+    end)
+end

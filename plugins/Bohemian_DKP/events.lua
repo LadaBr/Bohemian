@@ -8,7 +8,6 @@ local _, E = ...
 local C = E.CORE
 local A = E.EVENTS
 
-E.CORE:RegisterEvent('GROUP_ROSTER_UPDATE')
 E.CORE:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 E.CORE:RegisterEvent('ENCOUNTER_END')
 E.CORE:RegisterEvent('ENCOUNTER_START')
@@ -16,22 +15,22 @@ E.CORE:RegisterEvent('ENCOUNTER_START')
 function A:COMBAT_LOG_EVENT_UNFILTERED()
     local _, eventType, _, _, _, _, _, _, destName, _, _, recapID, _ = CombatLogGetCurrentEventInfo()
     if eventType == "UNIT_DIED" or eventType == "UNIT_DESTROYED" or eventType == "UNIT_DISSIPATES" then
-        if not IsInRaid() or not UnitIsGroupLeader("player") or E.isEncounterInProgress then
-            return
-        end
-        local reward = E:GetCurrentBossRewards(destName)
-        if reward then
-            --E:AwardDKPRaid(reward, "killing of " .. destName)
-        end
+        --if not IsInRaid() or not UnitIsGroupLeader("player") or E.isEncounterInProgress then
+        --    return
+        --end
+        --local reward = E:GetCurrentBossRewards(destName)
+        --if reward then
+        --    --E:AwardDKPRaid(reward, "killing of " .. destName)
+        --end
     end
 end
 
 function A:ENCOUNTER_END(encounterID, encounterName, difficultyID, groupSize, success)
     E.isEncounterInProgress = false
-    if not success then
+    if not success and not C:IsGuildRaid() then
         return
     end
-    local reward = E:GetCurrentBossRewards(encounterName)
+    local reward = E:GetCurrentBossRewards(encounterName, difficultyID)
     if reward then
         E:AwardDKPRaid(reward, "killing of " .. encounterName)
     end

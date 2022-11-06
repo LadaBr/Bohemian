@@ -1,7 +1,7 @@
 ## Interface: 30400
 ## Title: |cFF4068E0Bohemian|r
 ## Author: Elerae-Golemagg
-## Version: 4.3.1
+## Version: 4.3.2
 ## SavedVariablesPerCharacter: BohemianConfig
 
 libs\libs.xml
@@ -15,6 +15,7 @@ core\comms.lua
 core\core.lua
 core\player.lua
 core\guild.lua
+core\raid.lua
 core\events.lua
 core\version.lua
 core\init.lua

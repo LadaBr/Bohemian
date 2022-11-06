@@ -329,7 +329,7 @@ function E:CleanUpLogs()
         else
             for id, item in pairs(data) do
                 if not E:ValidateLogItem(item) then
-                    E:Debug("Deleting invalid log item")
+                    E:Print("Deleting invalid log item")
                     E:Debug(CurrentDKPLog.current.data[name][id])
                     CurrentDKPLog.current.data[name][id] = nil
                 end
@@ -340,7 +340,7 @@ end
 
 local pattern = "%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x"
 function E:ValidateLogItem(item)
-    if not item.id:match(pattern) then
+    if not item or not item.id or not item.id:match(pattern) then
         return false
     end
     if not string.find(item.editor, GetNormalizedRealmName()) then

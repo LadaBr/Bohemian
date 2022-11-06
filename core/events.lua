@@ -306,3 +306,8 @@ function A:UPDATE_GUILD_MEMBER(row, _, _, fullName)
     end
 
 end
+
+
+function A:GROUP_ROSTER_UPDATE()
+    E:CacheRaid()
+end

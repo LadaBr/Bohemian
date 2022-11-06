@@ -31,6 +31,9 @@ function A:CRAFT2(profId, skillId, craftTypeId, numAvailable, cooldown, reagents
         return
     end
     local guildName = C:GetGuildName()
+    if not guildName then
+        return
+    end
     local reagents_t = {}
     profId = tonumber(profId)
 

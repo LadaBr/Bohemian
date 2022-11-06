@@ -15,6 +15,16 @@ C:RegisterEvent('CHAT_MSG_PARTY')
 C:RegisterEvent('CHAT_MSG_PARTY_LEADER')
 C:RegisterEvent('CHAT_MSG_SYSTEM')
 C:RegisterEvent('GET_ITEM_INFO_RECEIVED')
+C:RegisterEvent('LOOT_OPENED')
+
+function A:ADDON_LOADED(name)
+    if name == "AdiBags" then
+        E:HookAdiBags()
+    end
+    if name == "XLoot" then
+        E:HookXLoot()
+    end
+end
 
 function A:CHAT_MSG_GUILD(...)
     E:ChatBid(...)
@@ -366,4 +376,8 @@ function A:DKP_CHANGED(_, fullName)
         self:UpdatePassButtonState()
         self:UpdateBidButtonState()
     end
+end
+
+function A:LOOT_OPENED()
+    E:HookXLoot()
 end

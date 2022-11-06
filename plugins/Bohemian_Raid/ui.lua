@@ -465,9 +465,9 @@ function E:GetSortedPlayers(sortType, sortDir)
             tmp[#tmp + 1] = data
         end
     else
-        for i, memberName in ipairs(E.raidMembersIndex) do
+        for i, memberName in ipairs(C.raidMembersIndex) do
             local data = {}
-            data.data = E.raidMembers[memberName]
+            data.data = C.raidMembers[memberName]
             data.resist = E.resistInfo[memberName] or {}
             if E.currentSession then
                 data.stats = E.currentSession.stats[memberName] or {

@@ -162,7 +162,7 @@ function E:CreateLogFrame()
         E:ToggleLogFrame()
     end)
 
-    GuildInfoCancelButton:SetText("Log")
+    GuildInfoCancelButton:SetText("DKP Log")
 
     GuildInfoFrame:SetScript("OnHide", function(self)
         logFrame:ClearAllPoints(true)
