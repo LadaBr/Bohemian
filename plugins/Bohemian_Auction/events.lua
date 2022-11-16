@@ -159,7 +159,7 @@ function A:BID_REQUEST(amount, auctionId, isChat, sender)
     E:Debug("Checking his current DKP", senderCurrentDKP)
     newBid = math.min(senderCurrentDKP, newBid)
     if E.bidInfo.name and (newBid <= E.bidInfo.value and (newBid ~= E.bidInfo.value or senderCurrentDKP ~= newBid)) then
-        E:Debug("Ignored because value is too low", newBid , "<=", EE.bidInfo.value)
+        E:Debug("Ignored because value is too low", newBid , "<=", E.bidInfo.value)
         return
     end
 

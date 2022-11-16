@@ -282,6 +282,10 @@ function A:UPDATE_GUILD_MEMBER(row, _, _, fullName)
     end
     local version = _G["GuildFrameGuildStatusButton" .. row .. "Version"]
     local versionText = _G["GuildFrameGuildStatusButton" .. row .. "VersionText"]
+    local name = _G["GuildFrameButton" .. row .. "Name"]
+    if E.raidMembers[fullName] then
+        name:SetTextColor(0, 1, 0)
+    end
     if E.guildRosterVersions.missing[fullName] then
         versionText:SetTextColor(0.5, 0.5, 0.5)
         version:Show()

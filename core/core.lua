@@ -39,6 +39,7 @@ function E:Load()
     C_Timer.After(20, function()
         E.stopIgnoringOffline = true
     end)
+    E:CacheRaid()
 end
 
 function E:AddToUpdateQueue(cb)
