@@ -52,8 +52,8 @@ end
 function E:HookContainerItemFrame(frame)
     frame:HookScript("OnClick", function(self)
         if (E:CanStartAuctionWithClick()) then
-	        local containerItemInfoTable = C_Container.GetContainerItemInfo(self:GetParent():GetID(), self:GetID());
-	        E:StartAuction(containerItemInfoTable.hyperlink, containerItemInfoTable.stackCount, frame)
+	   local containerItemInfoTable = C_Container.GetContainerItemInfo(self:GetParent():GetID(), self:GetID());
+	   E:StartAuction(containerItemInfoTable.hyperlink, containerItemInfoTable.stackCount, frame)
         end
     end)
 end
