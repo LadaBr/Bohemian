@@ -154,7 +154,7 @@ function E:AddVersionColumn()
         version:SetPoint("LEFT", online, "RIGHT", -version:GetWidth(), 0)
         local font = version:CreateFontString("$parentText", "ARTWORK", "GameFontNormal")
         font:SetText("·")
-        font:SetFont("Fonts\\FRIZQT__.TTF", 20)
+        font:SetFont("Fonts\\FRIZQT__.TTF", 20, "")
         font:SetPoint("CENTER", version, 0, 0)
 
         version:SetScript("OnEnter", function(self)
