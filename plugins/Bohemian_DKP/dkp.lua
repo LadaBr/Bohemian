@@ -180,18 +180,6 @@ function E:AdjustRaidFrame()
         return
     end
     E.raidFrameAdjusted = true
-    local awardRaid = C:CreateFrame("Button", "ButtonAwardRaidDKP", RaidFrame, "UIPanelButtonTemplate")
-    awardRaid:SetPoint("RIGHT", RaidFrameReadyCheckButton, "LEFT", -2, 0)
-    awardRaid:SetSize(90, 21)
-    awardRaid:SetText("Award DKP")
-    awardRaid:SetNormalFontObject("GameFontNormalSmall")
-    awardRaid:SetHighlightFontObject("GameFontHighlightSmall")
-    awardRaid:SetDisabledFontObject("GameFontDisableSmall")
-    awardRaid:RegisterForClicks("AnyUp")
-    awardRaid:SetScript("OnClick", function()
-        StaticPopup_Show("AWARD_GUILDPLAYERDKP_RAID")
-    end)
-
     E.allAssistPoint = { RaidFrameAllAssistCheckButton:GetPoint() }
 
     E:UpdateAwardDKPButton()
