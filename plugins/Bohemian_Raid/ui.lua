@@ -314,6 +314,21 @@ function E:AddRaidInfoFrame()
     table.insert(columns, b)
     local prevTimer = b
 
+    if CanEditPublicNote() then
+        local buttonsWidth = 150
+        local add = C:CreateFrame("Button", "ButtonAddAll", f, "UIPanelButtonTemplate")
+        add:SetPoint("TOPLEFT", f, "TOPLEFT", 20, -15)
+        add:SetWidth(buttonsWidth)
+        add:SetText("Award DKP")
+        add:SetFrameStrata("TOOLTIP")
+
+        add:RegisterForClicks("AnyUp")
+        add:SetScript("OnClick", function()
+            StaticPopup_Show("AWARD_GUILDPLAYERDKP_RAID")
+        end)
+        add:Show()
+    end
+
     for i = 1, 5 do
 
         local resistHeader = C:CreateFrame("BUTTON", "$parentColumnResist" .. i .. "Header", f, "GuildFrameColumnHeaderTemplate");

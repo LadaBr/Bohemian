@@ -43,18 +43,25 @@ function E:LoadDefaults()
 end
 
 function E:AddDKPSelected(value, channel, reason, percent)
+    local names = ""
     for name, state in pairs(self.editModeSelected) do
         if state then
+            names = names .. name .. ", "
             self:AddDKP(C.rosterIndex[name], value, channel, reason, percent)
         end
     end
+
+    SendChatMessage(format("DKP added to players: %s for reason: %s", names, reason), "GUILD")
 end
 function E:SubtractDKPSelected(value, channel, reason, percent)
+    local names = ""
     for name, state in pairs(self.editModeSelected) do
         if state then
+            names = names .. name .. ", "
             self:SubtractDKP(C.rosterIndex[name], value, channel, reason, percent)
         end
     end
+    SendChatMessage(format("DKP subtracted to players: %s for reason: %s", names, reason), "GUILD")
 end
 function E:SubtractDKP(index, value, channel, reason, percent)
     local currentValue = self:NoteDKPToNumber(select(7, GetGuildRosterInfo(index))) or 0
@@ -173,18 +180,6 @@ function E:AdjustRaidFrame()
         return
     end
     E.raidFrameAdjusted = true
-    local awardRaid = C:CreateFrame("Button", "ButtonAwardRaidDKP", RaidFrame, "UIPanelButtonTemplate")
-    awardRaid:SetPoint("RIGHT", RaidFrameReadyCheckButton, "LEFT", -2, 0)
-    awardRaid:SetSize(90, 21)
-    awardRaid:SetText("Award DKP")
-    awardRaid:SetNormalFontObject("GameFontNormalSmall")
-    awardRaid:SetHighlightFontObject("GameFontHighlightSmall")
-    awardRaid:SetDisabledFontObject("GameFontDisableSmall")
-    awardRaid:RegisterForClicks("AnyUp")
-    awardRaid:SetScript("OnClick", function()
-        StaticPopup_Show("AWARD_GUILDPLAYERDKP_RAID")
-    end)
-
     E.allAssistPoint = { RaidFrameAllAssistCheckButton:GetPoint() }
 
     E:UpdateAwardDKPButton()
