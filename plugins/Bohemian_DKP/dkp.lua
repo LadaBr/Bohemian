@@ -181,8 +181,6 @@ function E:AdjustRaidFrame()
     end
     E.raidFrameAdjusted = true
     E.allAssistPoint = { RaidFrameAllAssistCheckButton:GetPoint() }
-
-    E:UpdateAwardDKPButton()
 end
 
 function E:ProcessQueue()

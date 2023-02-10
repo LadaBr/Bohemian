@@ -747,20 +747,6 @@ function E:AddConfigFrames(f)
 
 end
 
-function E:UpdateAwardDKPButton()
-    if not E.raidUILoaded then
-        return
-    end
-    RaidFrameAllAssistCheckButton:ClearAllPoints(true)
-    if not IsInRaid() or not E:CanEditDKP() then
-        ButtonAwardRaidDKP:Hide()
-        RaidFrameAllAssistCheckButton:SetPoint(unpack(E.allAssistPoint))
-    else
-        ButtonAwardRaidDKP:Show()
-        RaidFrameAllAssistCheckButton:SetPoint("TOPRIGHT", -60, 0)
-    end
-end
-
 function E:GetBossRewardEditBox(frameName, difficulty)
     return _G[frameName .. "EditBoxBossRewards" .. difficulty]
 end

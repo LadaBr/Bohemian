@@ -92,10 +92,6 @@ function A:ADDON_LOADED(name)
     end
 end
 
-function A:GROUP_ROSTER_UPDATE()
-    E:UpdateAwardDKPButton()
-end
-
 function A:GUILD_ROSTER_UPDATE()
     E.canEdit = E:CanEditDKP()
 end
