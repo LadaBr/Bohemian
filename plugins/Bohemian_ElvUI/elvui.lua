@@ -177,15 +177,35 @@ E.MODULES = {
         BohemkaDKPLogFrame:SetPoint("TOPLEFT", GuildMemberDetailFrame, "TOPRIGHT", 6, 1)
     end,
     Bohemian_DKP = function(module)
-        local fn = module.UpdateAwardDKPButton
         module.UpdateAwardDKPButton = function()
-            fn(module)
+            if not E.raidUILoaded then
+                return
+            end
+            RaidFrameAllAssistCheckButton:ClearAllPoints(true)
+            if not IsInRaid() or not E:CanEditDKP() then
+                ButtonAwardRaidDKP:Hide()
+                RaidFrameAllAssistCheckButton:SetPoint(unpack(E.allAssistPoint))
+            else
+                ButtonAwardRaidDKP:Show()
+                RaidFrameAllAssistCheckButton:SetPoint("TOPRIGHT", -60, 0)
+            end
             RaidFrameAllAssistCheckButton:ClearAllPoints(true)
             RaidFrameAllAssistCheckButton:SetPoint("TOPLEFT", 1, -24)
         end
         local fn2 = module.AdjustRaidFrame
         module.AdjustRaidFrame = function()
             fn2(module)
+	        local awardRaid = C:CreateFrame("Button", "ButtonAwardRaidDKP", RaidFrame, "UIPanelButtonTemplate")
+            awardRaid:SetPoint("RIGHT", RaidFrameReadyCheckButton, "LEFT", -2, 0)
+            awardRaid:SetSize(90, 21)
+            awardRaid:SetText("Award DKP")
+            awardRaid:SetNormalFontObject("GameFontNormalSmall")
+            awardRaid:SetHighlightFontObject("GameFontHighlightSmall")
+            awardRaid:SetDisabledFontObject("GameFontDisableSmall")
+            awardRaid:RegisterForClicks("AnyUp")
+            awardRaid:SetScript("OnClick", function()
+                StaticPopup_Show("AWARD_GUILDPLAYERDKP_RAID")
+            end)		
             ButtonAwardRaidDKP:ClearAllPoints(true)
             ButtonAwardRaidDKP:SetPoint("RIGHT", RaidFrameReadyCheckButton, "LEFT", -2, 0)
             ButtonAwardRaidDKP:SetHeight(ButtonAwardRaidDKP:GetHeight() + 2)
