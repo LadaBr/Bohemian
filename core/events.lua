@@ -262,14 +262,14 @@ function A:REQUIRED_MODULES(modules, lastUpdate, sender)
     end
     for _, module in ipairs(modules) do
         if not E:GetModule(module) and not E.missingModules[module] then
-            E:Print(E:colorize("Missing required module ", E.COLOR.RED)..module)
+            E:Print(E:colorize("Missing recommended module ", CreateColor(1, 0.4, 0.1))..module)
             E.missingModules[module] = true
             BohemianConfig.requiredModules[module] = true
         end
     end
     for _, _ in pairs(E.missingModules) do
         E.disabled = true
-        E:Print("You have to enable all required modules in order to use this addon!")
+        E:Print("You should enable all modules recommended by your guild master.")
         break
     end
     E:UpdateModuleControlItems()
