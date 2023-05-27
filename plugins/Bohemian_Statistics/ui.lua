@@ -270,7 +270,7 @@ function E:UpdateStatisticRows()
             if rep then
                 rep:SetText(member.rep == 0 and "-" or member.rep)
             end
-            if hours then
+            if hours and member.hours then
                 hours:SetText(member.hours == 0 and "-" or round(member.hours / 60, 1))
             end
 
