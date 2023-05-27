@@ -268,7 +268,6 @@ function A:REQUIRED_MODULES(modules, lastUpdate, sender)
         end
     end
     for _, _ in pairs(E.missingModules) do
-        E.disabled = true
         E:Print("You should enable all modules recommended by your guild master.")
         break
     end
