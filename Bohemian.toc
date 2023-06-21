@@ -1,7 +1,7 @@
-## Interface: 30401
+## Interface: 30402
 ## Title: |cFF4068E0Bohemian|r
 ## Author: Elerae-Golemagg
-## Version: 4.4.4
+## Version: 4.4.5
 ## SavedVariablesPerCharacter: BohemianConfig
 
 libs\libs.xml
