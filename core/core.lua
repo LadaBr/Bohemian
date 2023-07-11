@@ -231,7 +231,11 @@ function E:SaveOptions()
     for _, name in pairs(self.AVAILABLE_MODULES) do
         self:Debug("Saving options for module", name)
         local module = self.MODULES[name]
-        if module then
+        if module and 
+    	   (name == "Auction" or
+    	    name == "DKP" or
+    	    name == "Log" or
+    	    name == "Raid") then
             BohemkaDKPInterfaceOptionsPanel[name.."_okay"]()
         end
     end
@@ -241,7 +245,11 @@ function E:CancelOptions()
     for _, name in pairs(self.AVAILABLE_MODULES) do
         self:Debug("Cancelling options for module", name)
         local module = self.MODULES[name]
-        if module then
+        if module and 
+    	   (name == "Auction" or
+    	    name == "DKP" or
+    	    name == "Log" or
+    	    name == "Raid") then
             BohemkaDKPInterfaceOptionsPanel[name.."_cancel"]()
         end
     end
