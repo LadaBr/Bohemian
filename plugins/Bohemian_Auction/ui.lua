@@ -761,7 +761,7 @@ function E:AddConfigFrames(f)
     font2:SetPoint("TOPLEFT", font, "BOTTOMLEFT", 0, 5)
     font2:SetText("Item Name=10\nItem Name2=30")
     local name = f:GetName()
-    f.okay = function()
+    BohemkaDKPInterfaceOptionsPanel.Bohemian_Auction_okay = function()
         Bohemian_AuctionConfig.itemPrices = C:ConfigTextToTable(_G[name.."EditBoxItemPriceItemPrice"]:GetText())
         Bohemian_AuctionConfig.minBid = _G[name.."EditBoxMinimalBid"]:GetNumber()
         Bohemian_AuctionConfig.minItemPrice = _G[name.."EditBoxMinItemPrice"]:GetNumber()
@@ -769,11 +769,11 @@ function E:AddConfigFrames(f)
         Bohemian_AuctionConfig.startingDKP = _G[name.."EditBoxStartingDKP"]:GetNumber()
         Bohemian_AuctionConfig.bidCooldown = _G[name.."EditBoxBidCooldown"]:GetNumber()
         Bohemian_AuctionConfig.showBidInfoInChat = _G[name.."ShowBidInfoInChat"]:GetChecked()
-        Bohemian_AuctionConfig.startAuctionModifier = UIDropDownMenu_GetSelectedValue(_G[name.."AuctionKeyBind"])
+        Bohemian_AuctionConfig.startAuctionModifier = UIDropDownMenu_GetSelectedValue(auctionStartKeyBind)
         Bohemian_AuctionConfig.addToCurrentAmount = _G[name.."ToggleAuctionMode"]:GetChecked()
     end
 
-    f.cancel = function()
+    fBohemkaDKPInterfaceOptionsPanel.Bohemian_Auction_cancel = function()
         _G[name.."EditBoxItemPriceItemPrice"]:SetText(C:TableToConfigText(Bohemian_AuctionConfig.itemPrices))
         _G[name.."EditBoxMinimalBid"]:SetNumber(Bohemian_AuctionConfig.minBid)
         _G[name.."EditBoxMinItemPrice"]:SetNumber(Bohemian_AuctionConfig.minItemPrice)
@@ -782,7 +782,7 @@ function E:AddConfigFrames(f)
         _G[name.."EditBoxBidCooldown"]:SetNumber(Bohemian_AuctionConfig.bidCooldown)
         _G[name.."ShowBidInfoInChat"]:SetChecked(Bohemian_AuctionConfig.showBidInfoInChat)
         _G[name.."ToggleAuctionMode"]:SetChecked(Bohemian_AuctionConfig.addToCurrentAmount)
-        UIDropDownMenu_SetSelectedValue(_G[name.."AuctionKeyBind"], Bohemian_AuctionConfig.startAuctionModifier);
+        UIDropDownMenu_SetSelectedValue(auctionStartKeyBind, Bohemian_AuctionConfig.startAuctionModifier);
     end
 end
 
