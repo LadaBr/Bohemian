@@ -227,6 +227,26 @@ function E:SendRequiredModules(sender)
     end
 end
 
+function E:SaveOptions()
+    for _, name in pairs(self.AVAILABLE_MODULES) do
+        self:Debug("Saving options for module", name)
+        local module = self.MODULES[name]
+        if module then
+            BohemkaDKPInterfaceOptionsPanel[name.."_okay"]()
+        end
+    end
+end
+
+function E:CancelOptions()
+    for _, name in pairs(self.AVAILABLE_MODULES) do
+        self:Debug("Cancelling options for module", name)
+        local module = self.MODULES[name]
+        if module then
+            BohemkaDKPInterfaceOptionsPanel[name.."_cancel"]()
+        end
+    end
+end
+
 function E:Init()
     if E.disabled or E.initialized then
         return
