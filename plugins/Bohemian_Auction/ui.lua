@@ -773,7 +773,7 @@ function E:AddConfigFrames(f)
         Bohemian_AuctionConfig.addToCurrentAmount = _G[name.."ToggleAuctionMode"]:GetChecked()
     end
 
-    fBohemkaDKPInterfaceOptionsPanel.Bohemian_Auction_cancel = function()
+    BohemkaDKPInterfaceOptionsPanel.Bohemian_Auction_cancel = function()
         _G[name.."EditBoxItemPriceItemPrice"]:SetText(C:TableToConfigText(Bohemian_AuctionConfig.itemPrices))
         _G[name.."EditBoxMinimalBid"]:SetNumber(Bohemian_AuctionConfig.minBid)
         _G[name.."EditBoxMinItemPrice"]:SetNumber(Bohemian_AuctionConfig.minItemPrice)
