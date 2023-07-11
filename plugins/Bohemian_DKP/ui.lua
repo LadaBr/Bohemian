@@ -734,12 +734,12 @@ function E:AddConfigFrames(f)
         E:ShowBossRewardEditBox(frameName, self.value)
     end
 
-    f.okay = function()
+    BohemkaDKPInterfaceOptionsPanel.Bohemian_DKP_okay = function()
         for index, difficulty in ipairs(difficulties) do
             Bohemian_DKPConfig.bossRewards[difficulty[1]] = C:ConfigTextToTable(E:GetBossRewardEditBox(frameName, difficulty[1]).editbox:GetText())
         end
     end
-    f.cancel = function()
+    BohemkaDKPInterfaceOptionsPanel.Bohemian_DKP_cancel = function()
         for index, difficulty in ipairs(difficulties) do
             E:GetBossRewardEditBox(frameName, difficulty[1]).editbox:SetText(C:TableToConfigText(Bohemian_DKPConfig.bossRewards[difficulty[1]]))
         end
