@@ -608,10 +608,10 @@ function E:AddConfigFrames(f)
         StaticPopup_Show("WIPE_DATA_ALL")
     end)
     local name = f:GetName()
-    f.okay = function()
+    BohemkaDKPInterfaceOptionsPanel.Bohemian_Log_okay = function()
         Bohemian_LogConfig.autoBackup = _G[name.."EditBoxAutoBackup"]:GetNumber()
     end
-    f.cancel = function()
+    BohemkaDKPInterfaceOptionsPanel.Bohemian_Log_cancel = function()
         _G[name.."EditBoxAutoBackup"]:SetNumber(Bohemian_LogConfig.autoBackup)
     end
 

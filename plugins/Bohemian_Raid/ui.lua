@@ -64,14 +64,14 @@ function E:AddConfigFrames(f)
     local title, _ = C:AddConfigEditBox(f, {"TOPLEFT", font, "BOTTOMLEFT", 0, -10}, "GuildRaidMinimalCount", "Guild Raid members", Bohemian_RaidConfig.guildRaidMemberRatio, "%")
 
     local name = f:GetName()
-    f.okay = function()
+    BohemkaDKPInterfaceOptionsPanel.Bohemian_Raid_okay = function()
         Bohemian_RaidConfig.announceParry = _G[name.."AnnounceParry"]:GetChecked()
         Bohemian_RaidConfig.announceMD = _G[name.."AnnounceMD"]:GetChecked()
         Bohemian_RaidConfig.raidHours = _G[name.."RaidHours"]:GetChecked()
         Bohemian_RaidConfig.guildRaidMemberRatio = tonumber(_G[name.."EditBoxGuildRaidMinimalCount"]:GetText())
     end
 
-    f.cancel = function()
+    BohemkaDKPInterfaceOptionsPanel.Bohemian_Raid_cancel = function()
         _G[name.."AnnounceParry"]:SetChecked(Bohemian_RaidConfig.announceParry)
         _G[name.."AnnounceMD"]:SetChecked(Bohemian_RaidConfig.announceMD)
         _G[name.."RaidHours"]:SetChecked(Bohemian_RaidConfig.raidHours)
